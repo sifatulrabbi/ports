@@ -62,7 +62,7 @@ func main() {
 	}()
 	defer server.Close()
 
-	r.HandleFunc("/hello", controllers.Hello)
+	r.HandleFunc("/hello", controllers.Test)
 	r.Handle("/socket.io/", server)
 	log.Printf("Starting the server on port %v\n", configs.Globals.PORT)
 	if err := http.ListenAndServe(configs.Globals.PORT, r); err != nil {

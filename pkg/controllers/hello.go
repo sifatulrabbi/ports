@@ -14,22 +14,40 @@ type BasicMsg struct {
 }
 
 type BasicResp struct {
-	Status  int    `json:"status"`
-	Success bool   `json:"success"`
-	Message string `json:"message"`
+	Status  int         `json:"status"`
+	Success bool        `json:"success"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
 }
 
 func Hello(w http.ResponseWriter, r *http.Request) {
+	var resp BasicResp
+
 	basicMsg := &BasicMsg{}
 	err := utils.DecodeJson(w, r, basicMsg)
 	if err != nil {
-		log.Fatal(err)
+		resp = BasicResp{Success: false, Status: err.Status, Message: err.Error(), Data: nil}
 	}
-	log.Print(basicMsg)
+	resp = BasicResp{Status: 200, Success: true, Message: "Successful", Data: basicMsg}
 
-	rb, _ := json.Marshal(&BasicResp{Status: http.StatusOK, Success: true, Message: basicMsg.Message})
+	rb, _ := json.Marshal(resp)
 	if _, err := w.Write(rb); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
+}
 
+func Test(w http.ResponseWriter, r *http.Request) {
+	var resp BasicResp
+	ct := r.Header.Get("Content-Type")
+	resp = BasicResp{
+		Success: true,
+		Status:  200,
+		Message: "Your content type",
+		Data:    map[string]string{"Content-Type": ct},
+	}
+	w.Header().Add("Content-Type", "application/json")
+	rb, _ := json.Marshal(resp)
+	if _, err := w.Write(rb); err != nil {
+		log.Fatalln(err)
+	}
 }

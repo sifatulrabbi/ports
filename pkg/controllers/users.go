@@ -21,3 +21,19 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(jsonResp)
 }
+
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func RemoveUser(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func GetUserById(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func GetUsers(w http.ResponseWriter, r *http.Request) {
+
+}
