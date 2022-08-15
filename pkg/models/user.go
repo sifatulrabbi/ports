@@ -1,12 +1,19 @@
 package models
 
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
+
 type User struct {
-	ID        string `json:"id"`
-	Fullname  string `json:"fullname"`
-	Email     string `json:"email"`
-	Username  string `json:"username"`
-	AvatarURL string `json:"avatarURL"`
-	Bio       string `json:"bio"`
-	CreatedAt string `json:"createdAt"`
-	UpdatedAt string `json:"updatedAt"`
+	gorm.Model
+	ID        uint      `gorm:"primaryKey"`
+	Fullname  string    `json:"fullname"`
+	Email     string    `json:"email"`
+	Username  string    `json:"username"`
+	AvatarURL string    `json:"avatarURL"`
+	Bio       string    `json:"bio"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }

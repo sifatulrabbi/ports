@@ -13,6 +13,7 @@ import (
 
 	"github.com/sifatulrabbi/ports/pkg/configs"
 	"github.com/sifatulrabbi/ports/pkg/controllers"
+	"github.com/sifatulrabbi/ports/pkg/db"
 )
 
 func allowOrigin(r *http.Request) bool {
@@ -55,15 +56,16 @@ func main() {
 		log.Println(s.ID(), "disconnected")
 	})
 
+	r.HandleFunc("/hello", controllers.Test)
+	r.Handle("/socket.io/", server)
+
+	db.Connect()
 	go func() {
 		if err := server.Serve(); err != nil {
 			log.Fatalln("Socket.IO error: ", err)
 		}
 	}()
 	defer server.Close()
-
-	r.HandleFunc("/hello", controllers.Test)
-	r.Handle("/socket.io/", server)
 	log.Printf("Starting the server on port %v\n", configs.Globals.PORT)
 	if err := http.ListenAndServe(configs.Globals.PORT, r); err != nil {
 		log.Fatalln(err)
