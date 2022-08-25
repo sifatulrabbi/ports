@@ -1,28 +1,29 @@
 package db
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"time"
 
-	"github.com/sifatulrabbi/ports/pkg/configs"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var DB *gorm.DB
+var Client *mongo.Client
 
 func Connect() {
-	dsn := fmt.Sprintf("host=localhost user=%v password=%v dbname=%v port=%v sslmode=disable",
-		configs.Globals.DB_USERNAME,
-		configs.Globals.DB_PASSWORD,
-		configs.Globals.DB_NAME,
-		configs.Globals.DB_PORT,
-	)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	Client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
-		log.Fatalln("unable to connect to the database")
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
+	ctx, cancelCtx := context.WithTimeout(context.Background(), 10*time.Second)
+	err = Client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Connected to MongoDB")
 
-	DB = db
+	defer Client.Disconnect(ctx)
+	defer cancelCtx()
 }

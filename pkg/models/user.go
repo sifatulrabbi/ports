@@ -2,13 +2,10 @@ package models
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type User struct {
-	gorm.Model
-	ID        uint      `gorm:"primaryKey"`
+	ID        string    `json:"id"`
 	Fullname  string    `json:"fullname"`
 	Email     string    `json:"email"`
 	Username  string    `json:"username"`
