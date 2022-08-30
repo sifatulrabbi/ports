@@ -18,12 +18,13 @@ func (e *ErrResp) Error() string {
 	return e.Message
 }
 
-func DecodeJson(w http.ResponseWriter, r *http.Request, v interface{}) (errResp *ErrResp) {
+func DecodeJson(w http.ResponseWriter, r *http.Request, v interface{}) *ErrResp {
+	var errResp = &ErrResp{}
 	ct := r.Header.Get("Content-Type")
 	if ct != "application/json" {
 		errResp.Message = "Cannot accept request body"
 		errResp.Status = 400
-		return
+		return errResp
 	}
 	w.Header().Add("Content-Type", "application/json")
 	// Reading body with a limited bytes size.
@@ -68,5 +69,5 @@ func DecodeJson(w http.ResponseWriter, r *http.Request, v interface{}) (errResp 
 		errResp.Status = 400
 	}
 
-	return
+	return errResp
 }

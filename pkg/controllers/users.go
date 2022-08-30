@@ -1,25 +1,16 @@
 package controllers
 
 import (
-	"encoding/json"
-	"log"
 	"net/http"
 
-	"github.com/sifatulrabbi/ports/pkg/models"
+	// "github.com/sifatulrabbi/ports/pkg/models"
+	"github.com/sifatulrabbi/ports/pkg/utils"
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	u := &models.User{}
-	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
-		log.Fatalln("error while decoding json body", err)
-	}
-	log.Println(u)
-
-	jsonResp, err := json.Marshal(u)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	w.Write(jsonResp)
+	utils.LogReq(r)
+	// u := &models.User{}
+	// respErr := utils.DecodeJson(w, r, u)
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {

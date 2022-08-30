@@ -1,16 +1,18 @@
 package models
 
-import (
-	"time"
-)
-
 type User struct {
-	ID        string    `json:"id"`
-	Fullname  string    `json:"fullname"`
-	Email     string    `json:"email"`
-	Username  string    `json:"username"`
-	AvatarURL string    `json:"avatarURL"`
-	Bio       string    `json:"bio"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	Username  string `bson:"username"`
+	Password  string `bson:"password"`
+	Email     string `bson:"email"`
+	Fullname  string `bson:"fullname"`
+	AvatarURL string `bson:"avatarURL"`
+	Bio       string `bson:"bio"`
+}
+
+func (u *User) Save() {
+
+}
+
+func (u *User) GetById() {
+
 }

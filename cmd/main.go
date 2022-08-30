@@ -25,7 +25,6 @@ func main() {
 		r = mux.NewRouter()
 	)
 	configs.LoadENVs()
-
 	// Socket io configs to prevent CORS error.
 	ioOptions := &engineio.Options{
 		Transports: []transport.Transport{
@@ -36,39 +35,20 @@ func main() {
 	// IO server
 	server := io.NewServer(ioOptions)
 
-	server.OnConnect("/", func(s io.Conn) error {
-		s.SetContext("")
-		log.Println("connected: ", s.ID())
-		return nil
-	})
-
-	server.OnEvent("/", "notice", func(s io.Conn, msg string) error {
-		log.Println("notice: ", msg)
-		s.Emit("reply", "have "+msg)
-		return nil
-	})
-
-	server.OnError("/", func(s io.Conn, err error) {
-		log.Fatalln("met error: ", s.ID(), err)
-	})
-
-	server.OnDisconnect("/", func(s io.Conn, reason string) {
-		log.Println(s.ID(), "disconnected")
-	})
-
 	r.HandleFunc("/hello", controllers.Test)
+	r.HandleFunc("/api/v1/auth/register", controllers.Register).Methods("POST")
 	r.Handle("/socket.io/", server)
 
-	db.Connect()
 	go func() {
+		db.Connect()
 		if err := server.Serve(); err != nil {
 			log.Fatalln("Socket.IO error: ", err)
 		}
 	}()
 	defer server.Close()
+
 	log.Printf("Starting the server on port %v\n", configs.Globals.PORT)
 	if err := http.ListenAndServe(configs.Globals.PORT, r); err != nil {
 		log.Fatalln(err)
 	}
-
 }
