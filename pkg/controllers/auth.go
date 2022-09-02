@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -13,27 +13,32 @@ import (
 // Handle register request.
 func Register(w http.ResponseWriter, r *http.Request) {
 	utils.LogReq(r)
-	w.Header().Add("Content-Type", "application/json")
-	decoder := json.NewDecoder(r.Body)
+	res := utils.CustomResponse{}
 	user := models.User{}
-	err := decoder.Decode(&user)
-	if err != nil {
-		log.Fatal(err)
-	}
+	utils.BodyParser(r, &user)
+
+	// Validate the payload.
 	valid := validators.RegisterPayload(&user)
 	if !valid {
-		b, _ := json.Marshal(map[string]interface{}{"success": false, "message": "Invalid payload"})
-		w.Write(b)
+		res.Message = "Invalid request payload"
+		res.Data = nil
+		res.BadRequest(w)
 		return
 	}
-	b, err := json.Marshal(user)
+
+	// Save the user.
+	_, err := user.Save()
+	fmt.Println(user)
 	if err != nil {
-		log.Fatal(err)
+		res.Message = err.Error()
+		res.Data = nil
+		res.BadRequest(w)
+		return
 	}
-	if err != nil {
-		log.Fatal(err)
-	}
-	w.Write(b)
+	res.Message = "User created"
+	res.Data = user
+	log.Println(res)
+	res.Created(w)
 }
 
 // Handle sign in.

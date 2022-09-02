@@ -21,16 +21,16 @@ var internalErr = CustomResponse{
 	Data:       nil,
 }
 
-func (res CustomResponse) Send(w http.ResponseWriter) error {
-	var err error
+func (res CustomResponse) Send(w http.ResponseWriter) {
 	w.Header().Add("Content-Type", "application/json")
 	b, err := json.Marshal(res)
 	if err != nil {
 		log.Print(err)
 		b, _ = json.Marshal(internalErr)
+		w.Write(b)
+		return
 	}
 	w.Write(b)
-	return err
 }
 
 func (res *CustomResponse) Ok(w http.ResponseWriter) {
