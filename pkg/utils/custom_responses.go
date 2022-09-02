@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type CustomResp struct {
+type CustomResponse struct {
 	Success    bool        `json:"success"`
 	StatusCode int         `json:"statusCode"`
 	Message    string      `json:"message"`
@@ -14,82 +14,84 @@ type CustomResp struct {
 }
 
 // Default internal error response body.
-var internalErr = CustomResp{
+var internalErr = CustomResponse{
 	Success:    false,
 	StatusCode: 500,
 	Message:    "Internal server error",
 	Data:       nil,
 }
 
-func (res CustomResp) Send(w http.ResponseWriter) error {
+func (res CustomResponse) Send(w http.ResponseWriter) error {
 	var err error
 	w.Header().Add("Content-Type", "application/json")
 	b, err := json.Marshal(res)
-	if err == nil {
-		w.Write(b)
-	} else {
+	if err != nil {
 		log.Print(err)
 		b, _ = json.Marshal(internalErr)
-		w.Write(b)
 	}
+	w.Write(b)
 	return err
 }
 
-func (res *CustomResp) Ok(data interface{}, msg string) {
+func (res *CustomResponse) Ok(w http.ResponseWriter) {
 	res.Success = true
 	res.StatusCode = http.StatusOK
-	if msg == "" {
+	if res.Message == "" {
 		res.Message = "Ok"
 	}
-	res.Data = data
+	res.Send(w)
 }
 
-func (res *CustomResp) BadRequest(data interface{}, msg string) {
+func (res *CustomResponse) BadRequest(w http.ResponseWriter) {
 	res.Success = false
 	res.StatusCode = http.StatusBadRequest
-	if msg == "" {
+	if res.Message == "" {
 		res.Message = "Bad request"
-	} else {
-		res.Message = msg
 	}
+	res.Send(w)
 }
 
-func (res *CustomResp) Created(data interface{}, msg string) {
+func (res *CustomResponse) Created(w http.ResponseWriter) {
 	res.Success = true
 	res.StatusCode = http.StatusCreated
-	if msg == "" {
+	if res.Message == "" {
 		res.Message = "Created"
-	} else {
-		res.Message = msg
 	}
+	res.Send(w)
 }
 
-func (res *CustomResp) NotFound(data interface{}, msg string) {
+func (res *CustomResponse) NotFound(w http.ResponseWriter) {
 	res.Success = false
 	res.StatusCode = http.StatusNotFound
-	if msg == "" {
+	if res.Message == "" {
 		res.Message = "Not found"
-	} else {
-		res.Message = msg
 	}
+	res.Send(w)
 }
 
-func (res *CustomResp) Unauthorized(data interface{}, msg string) {
+func (res *CustomResponse) Unauthorized(w http.ResponseWriter) {
 	res.Success = false
 	res.StatusCode = http.StatusUnauthorized
-	if msg == "" {
+	if res.Message == "" {
 		res.Message = "Unauthorized"
-	} else {
-		res.Message = msg
 	}
+	res.Send(w)
 }
 
-func (res *CustomResp) Forbidden(data interface{}, msg string) {
+func (res *CustomResponse) Forbidden(w http.ResponseWriter) {
 	res.Success = false
 	res.StatusCode = http.StatusForbidden
-	if msg == "" {
+	if res.Message == "" {
 		res.Message = "Forbidden"
-	} else {
-		res.Message = msg
 	}
+	res.Send(w)
+}
+
+func (res *CustomResponse) Internal(w http.ResponseWriter) {
+	res.Success = false
+	res.StatusCode = http.StatusInternalServerError
+	if res.Message == "" {
+		res.Message = "Internal server error"
+	}
+	res.Send(w)
 }

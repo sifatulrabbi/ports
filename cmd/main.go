@@ -31,10 +31,11 @@ func main() {
 			&websocket.Transport{CheckOrigin: allowOrigin},
 		},
 	}
-	// IO server
+	// IO server.
 	server := io.NewServer(ioOptions)
-
-	r.HandleFunc("/hello", controllers.Test)
+	// Register routes.
+	r.HandleFunc("/hello", controllers.HelloGET).Methods("GET")
+	r.HandleFunc("/hello", controllers.TestMongoDB).Methods("POST")
 	r.HandleFunc("/api/v1/auth/register", controllers.Register).Methods("POST")
 	r.Handle("/socket.io/", server)
 

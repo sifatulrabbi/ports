@@ -1,11 +1,15 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
+	"github.com/sifatulrabbi/ports/pkg/configs"
 	"github.com/sifatulrabbi/ports/pkg/utils"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type BasicMsg struct {
@@ -20,34 +24,64 @@ type BasicResp struct {
 	Data    interface{} `json:"data"`
 }
 
-func Hello(w http.ResponseWriter, r *http.Request) {
-	var resp BasicResp
-
-	basicMsg := &BasicMsg{}
-	err := utils.DecodeJson(w, r, basicMsg)
-	if err != nil {
-		resp = BasicResp{Success: false, Status: err.Status, Message: err.Error(), Data: nil}
-	}
-	resp = BasicResp{Status: 200, Success: true, Message: "Successful", Data: basicMsg}
-
-	rb, _ := json.Marshal(resp)
-	if _, err := w.Write(rb); err != nil {
-		log.Fatalln(err)
-	}
+func HelloGET(w http.ResponseWriter, r *http.Request) {
+	res := utils.CustomResponse{}
+	res.Data = true
+	res.Message = "GET request accepted"
+	res.Ok(w)
 }
 
-func Test(w http.ResponseWriter, r *http.Request) {
-	var resp BasicResp
-	ct := r.Header.Get("Content-Type")
-	resp = BasicResp{
-		Success: true,
-		Status:  200,
-		Message: "Your content type",
-		Data:    map[string]string{"Content-Type": ct},
+func HelloPOST(w http.ResponseWriter, r *http.Request) {
+	var payload interface{}
+	res := utils.CustomResponse{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&payload)
+	if err != nil {
+		log.Println(err)
+		res.Message = "Unable to parse the body"
+		res.Data = nil
+		res.BadRequest(w)
+		return
 	}
-	w.Header().Add("Content-Type", "application/json")
-	rb, _ := json.Marshal(resp)
-	if _, err := w.Write(rb); err != nil {
-		log.Fatalln(err)
+	res.Message = "POST request accepted"
+	res.Data = payload
+	res.Ok(w)
+}
+
+func TestMongoDB(w http.ResponseWriter, r *http.Request) {
+	res := utils.CustomResponse{}
+	ctx, cancelCtx := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelCtx()
+
+	// Extract request body.
+	var payload interface{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&payload)
+	if err != nil {
+		log.Println(err)
+		res.Message = err.Error()
+		res.Data = nil
+		res.BadRequest(w)
+		return
 	}
+
+	// Save data to database.
+	collection := configs.GetCollection(configs.MongoClient, "users")
+	insRes, err := collection.InsertOne(ctx, bson.D{
+		{Key: "name", Value: "Md Sifatul Islam Rabbi"},
+		{Key: "age", Value: 20},
+		{Key: "occupation", Value: "Full stack developer"},
+	})
+	if err != nil {
+		log.Println(err)
+		res.Message = err.Error()
+		res.Data = nil
+		res.BadRequest(w)
+		return
+	}
+
+	// Send success response
+	res.Message = "Data saved on mongodb"
+	res.Data = map[string]interface{}{"id": insRes.InsertedID}
+	res.Created(w)
 }
