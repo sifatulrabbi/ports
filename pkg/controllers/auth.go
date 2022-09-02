@@ -5,36 +5,38 @@ import (
 	"log"
 	"net/http"
 
-	"golang.org/x/crypto/bcrypt"
-
+	"github.com/sifatulrabbi/ports/pkg/models"
 	"github.com/sifatulrabbi/ports/pkg/utils"
+	"github.com/sifatulrabbi/ports/pkg/validators"
 )
 
-type TestBody struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
-}
-
+// Handle register request.
 func Register(w http.ResponseWriter, r *http.Request) {
 	utils.LogReq(r)
+	w.Header().Add("Content-Type", "application/json")
 	decoder := json.NewDecoder(r.Body)
-	tb := TestBody{}
-	err := decoder.Decode(&tb)
+	user := models.User{}
+	err := decoder.Decode(&user)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
-	// hash password.
-	hp, err := bcrypt.GenerateFromPassword([]byte(tb.Password), bcrypt.DefaultCost)
+	valid := validators.RegisterPayload(&user)
+	if !valid {
+		b, _ := json.Marshal(map[string]interface{}{"success": false, "message": "Invalid payload"})
+		w.Write(b)
+		return
+	}
+	b, err := json.Marshal(user)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
-	tb.Password = string(hp)
+	if err != nil {
+		log.Fatal(err)
+	}
+	w.Write(b)
+}
 
-	// send a response.
-	res := utils.CustomResp{
-		Data:    tb,
-		Message: "User created",
-	}
-	res.Ok(w)
+// Handle sign in.
+func SignIn(w http.ResponseWriter, r *http.Request) {
+	utils.LogReq(r)
 }

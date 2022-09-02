@@ -13,7 +13,6 @@ import (
 
 	"github.com/sifatulrabbi/ports/pkg/configs"
 	"github.com/sifatulrabbi/ports/pkg/controllers"
-	"github.com/sifatulrabbi/ports/pkg/db"
 )
 
 func allowOrigin(r *http.Request) bool {
@@ -39,8 +38,8 @@ func main() {
 	r.HandleFunc("/api/v1/auth/register", controllers.Register).Methods("POST")
 	r.Handle("/socket.io/", server)
 
+	configs.ConnectDB()
 	go func() {
-		db.Connect()
 		if err := server.Serve(); err != nil {
 			log.Fatalln("Socket.IO error: ", err)
 		}
