@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"net"
 	"net/http"
 	"time"
 
@@ -26,8 +27,10 @@ type BasicResp struct {
 
 func HelloGET(w http.ResponseWriter, r *http.Request) {
 	res := utils.CustomResponse{}
-	res.Data = true
 	res.Message = "GET request accepted"
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	rIp := r.Header.Get("X-FORWARDED-FOR")
+	res.Data = map[string]string{"ip": ip, "realIp": rIp}
 	res.Ok(w)
 }
 

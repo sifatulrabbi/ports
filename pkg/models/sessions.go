@@ -2,12 +2,15 @@ package models
 
 import (
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Sessions struct {
-	CreatedAt    time.Duration
-	ExpiresAt    time.Duration
-	UserID       string
-	RefreshToken string
-	IP           string
+type Session struct {
+	ID           primitive.ObjectID `json:"id"`
+	CreatedAt    time.Duration      `json:"createdAt"`
+	UserID       primitive.ObjectID `json:"userId"`
+	Username     string             `json:"username"`
+	RefreshToken string             `json:"refreshToken"`
+	IP           string             `json:"ip"`
 }
