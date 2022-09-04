@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/sifatulrabbi/ports/pkg/configs"
@@ -52,15 +53,29 @@ func RemoveUser(u models.User) (bool, error) {
 }
 
 // Find an user from the database.
-func FindUser(u models.User) (models.User, error) {
-	fUser := models.User{}
+func FindUserById(id string) (models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	res := usersCollection().FindOne(ctx, u)
-	res.Decode(&fUser)
-	if fUser.Username == "" {
-		fUser = models.User{}
-		return fUser, errors.New("user not found")
+	filter := bson.D{{Key: "id", Value: id}}
+	res := usersCollection().FindOne(ctx, filter)
+	user := models.User{}
+	err := res.Decode(&user)
+	if err != nil {
+		return user, err
 	}
-	return fUser, nil
+	if user.Username == "" {
+		return user, errors.New("user not found")
+	}
+	return user, nil
+}
+
+// Find user by username
+func FindUserByUsername(username string) (models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	filter := bson.D{{Key: "username", Value: username}}
+	res := usersCollection().FindOne(ctx, filter)
+	user := models.User{}
+	err := res.Decode(&user)
+	return user, err
 }

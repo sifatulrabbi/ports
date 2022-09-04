@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"net"
 	"net/http"
 	"time"
 
@@ -43,6 +44,7 @@ func CreateSession(r *http.Request, u models.User) (models.Session, error) {
 	s.UserID = u.ID
 	s.Username = u.Username
 	s.CreatedAt = time.Duration(time.Now().Unix())
+	s.IP, _, _ = net.SplitHostPort(r.RemoteAddr)
 	// Save on the database.
 	_, err = sessionsCollection().InsertOne(ctx, s)
 	return s, err
