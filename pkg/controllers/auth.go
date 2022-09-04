@@ -2,16 +2,18 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/sifatulrabbi/ports/pkg/models"
 	"github.com/sifatulrabbi/ports/pkg/services"
 	"github.com/sifatulrabbi/ports/pkg/utils"
 	"github.com/sifatulrabbi/ports/pkg/validators"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type signInPayload struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username,omitempty" validate:"required"`
+	Password string `json:"password,omitempty" validate:"required"`
 }
 
 // Handle register request.
@@ -68,6 +70,13 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		res.NotFound(w)
 		return
 	}
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(p.Password))
+	if err != nil {
+		res.Data = nil
+		res.Message = "Passwords don't match"
+		res.BadRequest(w)
+		return
+	}
 	session, err := services.CreateSession(r, user)
 	if err != nil {
 		res.Data = user
@@ -76,6 +85,32 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	res.Message = "Login successful"
-	res.Data = map[string]string{"refreshToken": session.RefreshToken, "username": user.Username, "email": user.Email}
+	res.Data = map[string]string{"refreshToken": session.ID, "username": user.Username, "email": user.Email}
+	res.Ok(w)
+}
+
+func GetAccessToken(w http.ResponseWriter, r *http.Request) {
+	res := utils.CustomResponse{}
+	refreshToken := r.Header.Get("Authorization")
+	if refreshToken == "" {
+		res.Message = "No refresh token found"
+		res.NotFound(w)
+		return
+	}
+	split := strings.Split(refreshToken, " ")
+	if split[0] != "Bearer" || split[1] == "" {
+		res.Message = "Invalid refresh token"
+		res.BadRequest(w)
+		return
+	}
+	token, err := services.CreateAccessToken(split[1])
+	if err != nil {
+		res.Data = nil
+		res.Message = err.Error()
+		res.BadRequest(w)
+		return
+	}
+	res.Data = map[string]string{"accessToken": token}
+	res.Message = "Access token generated"
 	res.Ok(w)
 }

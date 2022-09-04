@@ -39,6 +39,7 @@ func main() {
 	r.HandleFunc("/hello", controllers.TestMongoDB).Methods("POST")
 	r.HandleFunc("/api/v1/auth/register", controllers.Register).Methods("POST")
 	r.HandleFunc("/api/v1/auth/signin", controllers.SignIn).Methods("POST")
+	r.HandleFunc("/api/v1/auth/accesstoken", controllers.GetAccessToken).Methods("GET")
 
 	configs.ConnectDB()
 	go func() {

@@ -7,6 +7,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/sifatulrabbi/ports/pkg/configs"
 	"github.com/sifatulrabbi/ports/pkg/models"
@@ -23,7 +24,13 @@ func CreateUser(u models.User) (models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	u.ID = primitive.NewObjectID()
-	_, err := usersCollection().InsertOne(ctx, u)
+	// Hash the password.
+	hashedPass, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return u, err
+	}
+	u.Password = string(hashedPass)
+	_, err = usersCollection().InsertOne(ctx, u) // Save the user.
 	if err != nil {
 		u = models.User{}
 	}
@@ -53,7 +60,7 @@ func RemoveUser(u models.User) (bool, error) {
 }
 
 // Find an user from the database.
-func FindUserById(id string) (models.User, error) {
+func FindUserById(id primitive.ObjectID) (models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	filter := bson.D{{Key: "id", Value: id}}
