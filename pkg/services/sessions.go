@@ -4,27 +4,18 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"fmt"
-	"net"
-	"net/http"
 	"time"
 
-	jwt "github.com/golang-jwt/jwt/v4"
+	// jwt "github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/sifatulrabbi/ports/pkg/configs"
 	"github.com/sifatulrabbi/ports/pkg/models"
 )
-
-type jwtClaims struct {
-	Username string             `json:"username"`
-	Email    string             `json:"email"`
-	UserID   primitive.ObjectID `json:"userId"`
-	jwt.RegisteredClaims
-}
 
 // Get sessions collection.
 func sessionsCollection() *mongo.Collection {
@@ -40,7 +31,7 @@ func createHash(u models.User) (string, error) {
 }
 
 // Create a login session for an user.
-func CreateSession(r *http.Request, u models.User) (models.Session, error) {
+func CreateSession(u models.User, ip string) (models.Session, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	s := models.Session{}
@@ -50,40 +41,71 @@ func CreateSession(r *http.Request, u models.User) (models.Session, error) {
 		return s, err
 	}
 	// Update the session document.
-	s.ID = rToken
+	s.ID = primitive.NewObjectID()
+	s.RefreshToken = rToken
 	s.UserID = u.ID
 	s.Username = u.Username
+	s.Email = u.Email
 	s.CreatedAt = time.Duration(time.Now().Unix())
-	s.IP, _, _ = net.SplitHostPort(r.RemoteAddr)
+	s.IP = ip
 	// Save on the database.
 	_, err = sessionsCollection().InsertOne(ctx, s)
 	return s, err
 }
 
-func CreateAccessToken(rToken string) (string, error) {
+func CreateAccessToken(refreshToken string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	res := sessionsCollection().FindOne(ctx, bson.D{{Key: "id", Value: rToken}})
-	session := models.Session{}
-	res.Decode(&session)
-	user, err := FindUserById(session.UserID)
-	if err != nil {
-		err = errors.New("no session found for the access token")
-		return "", err
+	res := sessionsCollection().FindOne(ctx, &bson.D{{Key: "refresh_token", Value: refreshToken}})
+	if res.Err() != nil {
+		return "", res.Err()
 	}
-	claims := jwtClaims{
-		Username: user.Username,
-		Email:    user.Email,
-		UserID:   user.ID,
+	s := models.Session{}
+	res.Decode(&s)
+	exp := jwt.NewNumericDate(time.Now().Add(5 * time.Minute))
+	authClaims := models.AuthTokenClaims{
+		UserID:   s.UserID,
+		Username: s.Username,
+		Email:    s.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(2 * time.Minute)),
+			ExpiresAt: exp,
 			Issuer:    "ports-test",
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	ss, err := token.SignedString([]byte(session.ID))
+	parseAuth := jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims)
+	authToken, err := parseAuth.SignedString([]byte(s.RefreshToken))
 	if err != nil {
-		err = errors.New("unable to sign the jwt token")
+		return "", err
 	}
-	return ss, err
+	accessClaims := models.AccessTokenClaims{
+		ID:        s.ID,
+		AuthToken: authToken,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: exp,
+			Issuer:    "ports-test",
+		},
+	}
+	parseAccess := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+	accessToken, err := parseAccess.SignedString([]byte(configs.Globals.JWT_SECRET))
+	return accessToken, err
+}
+
+func RemoveSession(id primitive.ObjectID, ip string, username string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	filter := bson.D{
+		{Key: "$and",
+			Value: bson.A{
+				bson.D{{Key: "username", Value: username}},
+				bson.D{{Key: "ip", Value: ip}},
+			},
+		},
+		{Key: "$or",
+			Value: bson.A{
+				bson.D{{Key: "id", Value: id}},
+			},
+		},
+	}
+	_, err := sessionsCollection().DeleteMany(ctx, filter)
+	return err
 }

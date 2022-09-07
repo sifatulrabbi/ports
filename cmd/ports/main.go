@@ -13,6 +13,7 @@ import (
 
 	"github.com/sifatulrabbi/ports/pkg/configs"
 	"github.com/sifatulrabbi/ports/pkg/controllers"
+	"github.com/sifatulrabbi/ports/pkg/utils"
 )
 
 func allowOrigin(r *http.Request) bool {
@@ -40,6 +41,7 @@ func main() {
 	r.HandleFunc("/api/v1/auth/register", controllers.Register).Methods("POST")
 	r.HandleFunc("/api/v1/auth/signin", controllers.SignIn).Methods("POST")
 	r.HandleFunc("/api/v1/auth/accesstoken", controllers.GetAccessToken).Methods("GET")
+	r.HandleFunc("/api/v1/users/{username}", utils.AuthGuard(controllers.GetUserByUsername)).Methods("GET")
 
 	configs.ConnectDB()
 	go func() {

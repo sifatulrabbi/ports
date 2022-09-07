@@ -21,7 +21,7 @@ func RemoveUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetUserById(w http.ResponseWriter, r *http.Request) {
+func GetUserByUsername(w http.ResponseWriter, r *http.Request) {
 
 }
 

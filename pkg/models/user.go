@@ -5,11 +5,11 @@ import (
 )
 
 type User struct {
-	ID        primitive.ObjectID `json:"id,omitempty"`
-	Username  string             `json:"username,omitempty" validate:"required"`
-	Password  string             `json:"password,omitempty" validate:"required"`
-	Email     string             `json:"email,omitempty" validate:"required"`
-	Fullname  string             `json:"fullname,omitempty" validate:"required"`
-	AvatarURL string             `json:"avatarURL,omitempty" validate:"required"`
-	Bio       string             `json:"bio,omitempty" validate:"required"`
+	ID        primitive.ObjectID `bson:"id" json:"id"`
+	Username  string             `bson:"username" json:"username"`
+	Password  string             `bson:"password" json:"password"`
+	Email     string             `bson:"email" json:"email"`
+	Fullname  string             `bson:"fullname" json:"fullname"`
+	AvatarURL string             `bson:"avatar_url" json:"avatar_url"`
+	Bio       string             `bson:"bio" json:"bio"`
 }

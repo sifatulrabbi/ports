@@ -14,6 +14,7 @@ type ENVs struct {
 	DB_PORT     string
 	DB_NAME     string
 	DB_URI      string
+	JWT_SECRET  string
 }
 
 var Globals ENVs
