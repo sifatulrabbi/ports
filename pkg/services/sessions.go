@@ -30,6 +30,20 @@ func createHash(u models.User) (string, error) {
 	return str, err
 }
 
+// Find a session with it's id.
+func FindSessionById(id primitive.ObjectID) (models.Session, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	data := models.Session{}
+	filter := bson.D{{Key: "id", Value: id}}
+	res := sessionsCollection().FindOne(ctx, filter)
+	if res.Err() != nil {
+		return data, res.Err()
+	}
+	err := res.Decode(&data)
+	return data, err
+}
+
 // Create a login session for an user.
 func CreateSession(u models.User, ip string) (models.Session, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
