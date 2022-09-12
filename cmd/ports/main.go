@@ -4,11 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	io "github.com/googollee/go-socket.io"
-	"github.com/googollee/go-socket.io/engineio"
-	"github.com/googollee/go-socket.io/engineio/transport"
-	"github.com/googollee/go-socket.io/engineio/transport/polling"
-	"github.com/googollee/go-socket.io/engineio/transport/websocket"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
 	"github.com/sifatulrabbi/ports/pkg/configs"
@@ -16,26 +12,13 @@ import (
 	"github.com/sifatulrabbi/ports/pkg/utils"
 )
 
-func allowOrigin(r *http.Request) bool {
-	return true
-}
-
 func main() {
 	var (
 		r = mux.NewRouter()
 	)
 	configs.LoadENVs()
-	// Socket io configs to prevent CORS error.
-	ioOptions := &engineio.Options{
-		Transports: []transport.Transport{
-			&polling.Transport{CheckOrigin: allowOrigin},
-			&websocket.Transport{CheckOrigin: allowOrigin},
-		},
-	}
-	// IO server.
-	server := io.NewServer(ioOptions)
-	r.Handle("/socket.io/", server)
-	// Register routes.
+	configs.ConnectDB()
+
 	r.HandleFunc("/hello", controllers.HelloGET).Methods("GET")
 	r.HandleFunc("/hello", controllers.TestMongoDB).Methods("POST")
 	r.HandleFunc("/api/v1/auth/register", controllers.Register).Methods("POST")
@@ -43,16 +26,11 @@ func main() {
 	r.HandleFunc("/api/v1/auth/accesstoken", controllers.GetAccessToken).Methods("GET")
 	r.HandleFunc("/api/v1/users/{username}", utils.AuthGuard(controllers.GetUserByUsername)).Methods("GET")
 
-	configs.ConnectDB()
-	go func() {
-		if err := server.Serve(); err != nil {
-			log.Fatalln("Socket.IO error: ", err)
-		}
-	}()
-	defer server.Close()
-
+	originOk := handlers.AllowedOrigins([]string{"*"})
+	headersOk := handlers.AllowedHeaders([]string{"x-custom-header"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
 	log.Printf("Starting the server on port %v\n", configs.Globals.PORT)
-	if err := http.ListenAndServe(configs.Globals.PORT, r); err != nil {
+	if err := http.ListenAndServe(configs.Globals.PORT, handlers.CORS(originOk, headersOk, methodsOk)(r)); err != nil {
 		log.Fatalln(err)
 	}
 }

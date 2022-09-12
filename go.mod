@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/golang-jwt/jwt/v4 v4.4.2
-	github.com/googollee/go-socket.io v1.6.2
+	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/joho/godotenv v1.4.0
 	go.mongodb.org/mongo-driver v1.10.1
@@ -12,10 +12,8 @@ require (
 )
 
 require (
-	github.com/gofrs/uuid v4.0.0+incompatible // indirect
+	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/gomodule/redigo v1.8.4 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/pkg/errors v0.9.1 // indirect
