@@ -18,7 +18,7 @@ type signInPayload struct {
 }
 
 // Handle register request.
-func Register(w http.ResponseWriter, r *http.Request) {
+func register(w http.ResponseWriter, r *http.Request) {
 	utils.LogReq(r)
 	res := utils.Response{}
 	user := models.User{}
@@ -53,7 +53,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 }
 
 // Handle sign in.
-func SignIn(w http.ResponseWriter, r *http.Request) {
+func signIn(w http.ResponseWriter, r *http.Request) {
 	utils.LogReq(r)
 	res := utils.Response{}
 	p := signInPayload{}
@@ -91,7 +91,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	res.Ok(w)
 }
 
-func GetAccessToken(w http.ResponseWriter, r *http.Request) {
+func getAccessToken(w http.ResponseWriter, r *http.Request) {
 	res := utils.Response{}
 	token := r.Header.Get("Authorization")
 	if token == "" {
@@ -109,8 +109,4 @@ func GetAccessToken(w http.ResponseWriter, r *http.Request) {
 	res.Message = "Access token generated"
 	res.Data = accessToken
 	res.Ok(w)
-}
-
-func SignOut(w http.ResponseWriter, r *http.Request) error {
-	return nil
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/sifatulrabbi/ports/pkg/utils"
 )
 
-func GetDirNames(w http.ResponseWriter, r *http.Request) {
+func getDirNames(w http.ResponseWriter, r *http.Request) {
 	utils.LogReq(r)
 	res := utils.Response{}
 	dirNames, err := services.GetHomeDir()
@@ -22,22 +22,7 @@ func GetDirNames(w http.ResponseWriter, r *http.Request) {
 	res.Ok(w)
 }
 
-func GetDirInformation(w http.ResponseWriter, r *http.Request) {
-	utils.LogReq(r)
-	res := utils.Response{}
-	params := mux.Vars(r)
-	info, err := services.GetDirInfo(params["dirname"])
-	if err != nil {
-		res.Message = err.Error()
-		res.BadRequest(w)
-		return
-	}
-	res.Message = "Directory's information"
-	res.Data = info
-	res.Ok(w)
-}
-
-func GetSubDirs(w http.ResponseWriter, r *http.Request) {
+func getSubDirs(w http.ResponseWriter, r *http.Request) {
 	utils.LogReq(r)
 	res := utils.Response{}
 	params := mux.Vars(r)
@@ -52,7 +37,7 @@ func GetSubDirs(w http.ResponseWriter, r *http.Request) {
 	res.Ok(w)
 }
 
-func GetAFile(w http.ResponseWriter, r *http.Request) {
+func getAFile(w http.ResponseWriter, r *http.Request) {
 	utils.LogReq(r)
 	res := utils.Response{}
 	params := mux.Vars(r)
