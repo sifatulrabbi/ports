@@ -20,7 +20,7 @@ type signInPayload struct {
 // Handle register request.
 func Register(w http.ResponseWriter, r *http.Request) {
 	utils.LogReq(r)
-	res := utils.CustomResponse{}
+	res := utils.Response{}
 	user := models.User{}
 	utils.BodyParser(r, &user)
 
@@ -55,7 +55,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 // Handle sign in.
 func SignIn(w http.ResponseWriter, r *http.Request) {
 	utils.LogReq(r)
-	res := utils.CustomResponse{}
+	res := utils.Response{}
 	p := signInPayload{}
 	err := utils.BodyParser(r, &p)
 	if err != nil {
@@ -92,7 +92,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAccessToken(w http.ResponseWriter, r *http.Request) {
-	res := utils.CustomResponse{}
+	res := utils.Response{}
 	token := r.Header.Get("Authorization")
 	if token == "" {
 		res.Message = "No refresh token found"

@@ -15,7 +15,7 @@ import (
 // Auth decorator
 // This will first validate the request and will forward it to the next function
 func AuthGuard(next func(w http.ResponseWriter, r *http.Request, session *models.Session)) func(w http.ResponseWriter, r *http.Request) {
-	res := CustomResponse{}
+	res := Response{}
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		bearerToken := r.Header.Get("Authorization")

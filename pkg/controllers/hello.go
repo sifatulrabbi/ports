@@ -26,7 +26,7 @@ type BasicResp struct {
 }
 
 func HelloGET(w http.ResponseWriter, r *http.Request) {
-	res := utils.CustomResponse{}
+	res := utils.Response{}
 	res.Message = "GET request accepted"
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 	rIp := r.Header.Get("X-FORWARDED-FOR")
@@ -36,7 +36,7 @@ func HelloGET(w http.ResponseWriter, r *http.Request) {
 
 func HelloPOST(w http.ResponseWriter, r *http.Request) {
 	var payload interface{}
-	res := utils.CustomResponse{}
+	res := utils.Response{}
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&payload)
 	if err != nil {
@@ -52,7 +52,7 @@ func HelloPOST(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestMongoDB(w http.ResponseWriter, r *http.Request) {
-	res := utils.CustomResponse{}
+	res := utils.Response{}
 	ctx, cancelCtx := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancelCtx()
 

@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	// "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 
@@ -16,10 +15,15 @@ import (
 func registerRoutes(r *mux.Router) {
 	r.HandleFunc("/hello", controllers.HelloGET).Methods("GET")
 	r.HandleFunc("/hello", controllers.TestMongoDB).Methods("POST")
+	// Auth routers
 	r.HandleFunc("/api/v1/auth/register", controllers.Register).Methods("POST")
 	r.HandleFunc("/api/v1/auth/signin", controllers.SignIn).Methods("POST")
 	r.HandleFunc("/api/v1/auth/accesstoken", controllers.GetAccessToken).Methods("GET")
 	r.HandleFunc("/api/v1/users/{username}", utils.AuthGuard(controllers.GetUserByUsername)).Methods("GET")
+	// Directory management routers
+	r.HandleFunc("/api/v1/directories", controllers.GetDirNames).Methods("GET")
+	r.HandleFunc(`/api/v1/directories/{path:[a-zA-Z0-9/_\-\.\?]+}`, controllers.GetSubDirs).Methods("GET")
+	r.HandleFunc(`/api/v1/files/{path:[a-zA-Z0-9/_\-\.\?]+}`, controllers.GetAFile).Methods("GET")
 }
 
 func main() {
@@ -33,12 +37,10 @@ func main() {
 		AllowedOrigins: []string{"http://localhost:3000"},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"Content-Type", "Origin", "Authorization", "Host", "Accept", "User-Agent"},
-		// Debug:          true,
 	})
 
 	log.Printf("Starting the server on port %v\n", configs.Globals.PORT)
 	if err := http.ListenAndServe(configs.Globals.PORT, c.Handler(r)); err != nil {
 		log.Fatalln(err)
 	}
-
 }

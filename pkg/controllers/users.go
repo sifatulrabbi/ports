@@ -23,7 +23,7 @@ func RemoveUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetUserByUsername(w http.ResponseWriter, r *http.Request, session *models.Session) {
-	res := utils.CustomResponse{}
+	res := utils.Response{}
 	user, err := services.FindUserById(session.UserID)
 	if err != nil {
 		res.Message = err.Error()

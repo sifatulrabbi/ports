@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type CustomResponse struct {
+type Response struct {
 	Success    bool        `json:"success"`
 	StatusCode int         `json:"statusCode"`
 	Message    string      `json:"message"`
@@ -14,14 +14,14 @@ type CustomResponse struct {
 }
 
 // Default internal error response body.
-var internalErr = CustomResponse{
+var internalErr = Response{
 	Success:    false,
 	StatusCode: 500,
 	Message:    "Internal server error",
 	Data:       nil,
 }
 
-func (res CustomResponse) Send(w http.ResponseWriter) {
+func (res Response) Send(w http.ResponseWriter) {
 	w.Header().Add("Content-Type", "application/json")
 	b, err := json.Marshal(res)
 	if err != nil {
@@ -34,7 +34,11 @@ func (res CustomResponse) Send(w http.ResponseWriter) {
 	w.Write(b)
 }
 
-func (res *CustomResponse) Ok(w http.ResponseWriter) {
+func (res Response) SendFile(w http.ResponseWriter) {
+	w.Write(res.Data.([]byte))
+}
+
+func (res *Response) Ok(w http.ResponseWriter) {
 	res.Success = true
 	res.StatusCode = http.StatusOK
 	if res.Message == "" {
@@ -43,7 +47,7 @@ func (res *CustomResponse) Ok(w http.ResponseWriter) {
 	res.Send(w)
 }
 
-func (res *CustomResponse) BadRequest(w http.ResponseWriter) {
+func (res *Response) BadRequest(w http.ResponseWriter) {
 	res.Success = false
 	res.StatusCode = http.StatusBadRequest
 	if res.Message == "" {
@@ -52,7 +56,7 @@ func (res *CustomResponse) BadRequest(w http.ResponseWriter) {
 	res.Send(w)
 }
 
-func (res *CustomResponse) Created(w http.ResponseWriter) {
+func (res *Response) Created(w http.ResponseWriter) {
 	res.Success = true
 	res.StatusCode = http.StatusCreated
 	if res.Message == "" {
@@ -61,7 +65,7 @@ func (res *CustomResponse) Created(w http.ResponseWriter) {
 	res.Send(w)
 }
 
-func (res *CustomResponse) NotFound(w http.ResponseWriter) {
+func (res *Response) NotFound(w http.ResponseWriter) {
 	res.Success = false
 	res.StatusCode = http.StatusNotFound
 	if res.Message == "" {
@@ -70,7 +74,7 @@ func (res *CustomResponse) NotFound(w http.ResponseWriter) {
 	res.Send(w)
 }
 
-func (res *CustomResponse) Unauthorized(w http.ResponseWriter) {
+func (res *Response) Unauthorized(w http.ResponseWriter) {
 	res.Success = false
 	res.StatusCode = http.StatusUnauthorized
 	if res.Message == "" {
@@ -79,7 +83,7 @@ func (res *CustomResponse) Unauthorized(w http.ResponseWriter) {
 	res.Send(w)
 }
 
-func (res *CustomResponse) Forbidden(w http.ResponseWriter) {
+func (res *Response) Forbidden(w http.ResponseWriter) {
 	res.Success = false
 	res.StatusCode = http.StatusForbidden
 	if res.Message == "" {
@@ -88,7 +92,7 @@ func (res *CustomResponse) Forbidden(w http.ResponseWriter) {
 	res.Send(w)
 }
 
-func (res *CustomResponse) Internal(w http.ResponseWriter) {
+func (res *Response) Internal(w http.ResponseWriter) {
 	res.Success = false
 	res.StatusCode = http.StatusInternalServerError
 	if res.Message == "" {
