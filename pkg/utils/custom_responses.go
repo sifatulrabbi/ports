@@ -30,6 +30,7 @@ func (res CustomResponse) Send(w http.ResponseWriter) {
 		w.Write(b)
 		return
 	}
+	w.WriteHeader(res.StatusCode)
 	w.Write(b)
 }
 

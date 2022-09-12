@@ -62,6 +62,11 @@ func CreateSession(u models.User, ip string) (models.Session, error) {
 	s.Email = u.Email
 	s.CreatedAt = time.Duration(time.Now().Unix())
 	s.IP = ip
+	// Remove all the previous sessions from the same ip address.
+	_, err = sessionsCollection().DeleteMany(ctx, bson.D{{Key: "ip", Value: s.IP}})
+	if err != nil {
+		fmt.Println(err)
+	}
 	// Save on the database.
 	_, err = sessionsCollection().InsertOne(ctx, s)
 	return s, err

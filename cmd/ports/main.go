@@ -33,7 +33,7 @@ func main() {
 		AllowedOrigins: []string{"http://localhost:3000"},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"Content-Type", "Origin", "Authorization", "Host", "Accept", "User-Agent"},
-		Debug:          true,
+		// Debug:          true,
 	})
 
 	log.Printf("Starting the server on port %v\n", configs.Globals.PORT)
