@@ -8,6 +8,7 @@ import (
 	"github.com/rs/cors"
 	"github.com/sifatulrabbi/ports/pkg/configs"
 	"github.com/sifatulrabbi/ports/pkg/controllers"
+	"github.com/sifatulrabbi/ports/pkg/socket"
 )
 
 func main() {
@@ -21,6 +22,10 @@ func main() {
 		AllowedOrigins: []string{"http://localhost:3000"},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"Content-Type", "Origin", "Authorization", "Host", "Accept", "User-Agent"},
+	})
+
+	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		socket.ServeWs(w, r)
 	})
 
 	log.Printf("Starting the server on port %v\n", configs.Globals.PORT)
