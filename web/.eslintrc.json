@@ -9,6 +9,7 @@
 		"no-unused-expressions": "warn",
 		"no-unused-labels": "warn",
 		"consistent-this": "warn",
-		"no-empty-function": "warn"
+		"no-empty-function": "warn",
+		"react-hooks/exhaustive-deps": "off"
 	}
 }

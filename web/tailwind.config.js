@@ -1,7 +1,7 @@
-const daisyui = require("daisyui")
-
 module.exports = {
 	content: ["./src/**/*.{tsx,ts,js,jsx}"],
-	theme: {},
-	plugins: [daisyui],
+	plugins: [require("@tailwindcss/typography"), require("daisyui")],
+	daisyui: {
+		theme: ["winter"],
+	},
 }

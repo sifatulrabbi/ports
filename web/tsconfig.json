@@ -20,7 +20,12 @@
 			"@/app/*": ["./src/*"],
 			"@/hooks": ["./src/hooks"],
 			"@/features": ["./src/features"],
-			"@/components": ["./src/features"]
+			"@/components": ["./src/features"],
+			"@/constants": ["./src/constants"],
+			"@/utils": ["./src/utils"],
+			"@/interfaces": ["./src/interfaces"],
+			"@/states": ["./src/states"],
+			"@/providers": ["./src/providers"]
 		}
 	},
 	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],

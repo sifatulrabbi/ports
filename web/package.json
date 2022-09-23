@@ -16,12 +16,18 @@
 		"lint": "next lint"
 	},
 	"dependencies": {
+		"axios": "^0.27.2",
 		"daisyui": "^2.31.0",
+		"dayjs": "^1.11.5",
+		"lodash": "^4.17.21",
 		"next": "12.3.1",
 		"react": "18.2.0",
-		"react-dom": "18.2.0"
+		"react-dom": "18.2.0",
+		"recoil": "^0.7.5",
+		"uuid": "^9.0.0"
 	},
 	"devDependencies": {
+		"@tailwindcss/typography": "^0.5.7",
 		"@types/node": "18.7.18",
 		"@types/react": "18.0.21",
 		"@types/react-dom": "18.0.6",
