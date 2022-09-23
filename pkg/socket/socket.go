@@ -18,10 +18,9 @@ const (
 )
 
 var (
-	readPump  = make(chan Message, 256)
-	writePump = make(chan Message, 256)
-	clients   = map[int]*websocket.Conn{}
-	lastId    = 0
+	readPump = make(chan Message, 256)
+	clients  = map[int]*websocket.Conn{}
+	lastId   = 0
 )
 
 var upgrader = websocket.Upgrader{
@@ -32,12 +31,6 @@ var upgrader = websocket.Upgrader{
 func reader() {
 	for msg := range readPump {
 		log.Printf("Message from: %v", msg.ID)
-	}
-}
-
-func writer() {
-	for msg := range writePump {
-
 	}
 }
 
