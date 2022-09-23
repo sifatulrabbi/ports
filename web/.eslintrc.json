@@ -1,0 +1,14 @@
+{
+	"plugins": ["@typescript-eslint"],
+	"extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended", "prettier"],
+	"ignorePatterns": ["*.config.js"],
+	"rules": {
+		"consistent-return": "warn",
+		"prefer-const": "warn",
+		"no-unused-vars": "warn",
+		"no-unused-expressions": "warn",
+		"no-unused-labels": "warn",
+		"consistent-this": "warn",
+		"no-empty-function": "warn"
+	}
+}
