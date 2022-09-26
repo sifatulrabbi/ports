@@ -89,17 +89,20 @@ func login(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&p)
 	if err != nil {
+		fmt.Println(err)
 		res.Message = "invalid request body"
 		res.BadRequest(w)
 		return
 	}
 	err = r.Body.Close()
 	if err != nil {
+		fmt.Println(err)
 		res.Message = "invalid request body"
 		res.BadRequest(w)
 		return
 	}
 	if p.Username == "" || p.Password == "" {
+		fmt.Println(err)
 		res.Message = "Invalid request body"
 		res.BadRequest(w)
 		return
@@ -107,13 +110,16 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	u, err := services.FindUserByUsername(p.Username)
 	if err != nil {
+		fmt.Println(err)
 		res.Message = err.Error()
+		res.NotFound(w)
 		return
 	}
 
 	// compare the passwords
 	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(p.Password))
 	if err != nil {
+		fmt.Println(err)
 		res.Message = "Invalid credentials"
 		res.Forbidden(w)
 		return
@@ -149,9 +155,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 			Issuer:    "ports-app",
 		},
 	}
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	accessToken, err := jwtToken.SignedString([]byte(token))
 	if err != nil {
+		fmt.Println(err)
 		res.Message = err.Error()
 		res.BadRequest(w)
 		return
