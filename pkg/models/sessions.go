@@ -7,16 +7,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Session struct {
-	ID           primitive.ObjectID `bson:"id" json:"id"`
-	IP           string             `bson:"ip" json:"ip"`
-	RefreshToken string             `bson:"refresh_token" json:"refresh_token"`
-	Username     string             `bson:"username" json:"username"`
-	Email        string             `bson:"email" json:"email"`
-	UserID       primitive.ObjectID `bson:"user_id" json:"user_id"`
-	CreatedAt    time.Duration      `bson:"created_at" json:"created_at"`
-}
-
 type AccessTokenClaims struct {
 	ID        primitive.ObjectID `json:"id"`         // id of the associated refresh token
 	AuthToken string             `json:"auth_token"` // the actual token that contains user information
@@ -26,6 +16,13 @@ type AccessTokenClaims struct {
 type AuthTokenClaims struct {
 	UserID   primitive.ObjectID `json:"user_id"`
 	Username string             `json:"username"`
-	Email    string             `json:"email"`
 	jwt.RegisteredClaims
+}
+
+type AuthSession struct {
+	RefreshToken string             `bosn:"refresh_token"` // Session's refresh token
+	IP           string             `bson:"ip"`            // The document will also store the IP address to ensure security
+	Iat          time.Duration      `bson:"iat"`           // Session initiation date
+	UserID       primitive.ObjectID `json:"user_id"`
+	Username     string             `bson:"username"`
 }

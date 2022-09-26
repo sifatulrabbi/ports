@@ -12,24 +12,23 @@ import (
 )
 
 func main() {
-	r := mux.NewRouter()
+	router := mux.NewRouter()
 	configs.LoadENVs()
 	configs.ConnectDB()
 	// Register all the routes
-	controllers.Register(r)
+	controllers.RegisterRoutes(router)
 	// Handling CORS
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"http://localhost:3000"},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders: []string{"Content-Type", "Origin", "Authorization", "Host", "Accept", "User-Agent"},
 	})
 
-	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		socket.ServeWs(w, r)
 	})
 
 	log.Printf("Starting the server on port %v\n", configs.Globals.PORT)
-	if err := http.ListenAndServe(configs.Globals.PORT, c.Handler(r)); err != nil {
+	if err := http.ListenAndServe(configs.Globals.PORT, c.Handler(router)); err != nil {
 		log.Fatalln(err)
 	}
 }

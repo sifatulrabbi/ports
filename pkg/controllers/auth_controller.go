@@ -1,112 +1,166 @@
 package controllers
 
 import (
-	"net"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
 	"net/http"
-	"strings"
+	"time"
+
+	jwt "github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
+	"github.com/gorilla/securecookie"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/sifatulrabbi/ports/pkg/models"
 	"github.com/sifatulrabbi/ports/pkg/services"
 	"github.com/sifatulrabbi/ports/pkg/utils"
-	"github.com/sifatulrabbi/ports/pkg/validators"
-	"golang.org/x/crypto/bcrypt"
 )
 
-type signInPayload struct {
-	Username string `json:"username,omitempty" validate:"required"`
-	Password string `json:"password,omitempty" validate:"required"`
+type registerBody struct {
+	Username        string `json:"username"`
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirmPassword"`
+	Email           string `json:"email"`
+	Fullname        string `json:"fullname"`
 }
 
-// Handle register request.
+type loginBody struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type AuthResponse struct {
+	AccessToken string `json:"access_token"`
+}
+
+// register controller, verifies and creates a new user account.
 func register(w http.ResponseWriter, r *http.Request) {
-	utils.LogReq(r)
 	res := utils.Response{}
-	user := models.User{}
-	utils.BodyParser(r, &user)
-
-	// Validate the payload.
-	valid := validators.RegisterPayload(&user)
-	if !valid {
-		res.Message = "Invalid request payload"
-		res.Data = nil
+	p := registerBody{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&p)
+	if err != nil {
+		res.Message = "invalid request body"
+		res.BadRequest(w)
+		return
+	}
+	err = r.Body.Close()
+	if err != nil {
+		res.Message = "invalid request body"
+		res.BadRequest(w)
+		return
+	}
+	if p.Username == "" || p.Password == "" || p.ConfirmPassword == "" {
+		res.Message = "invalid request body"
+		res.BadRequest(w)
+		return
+	}
+	if p.Password != p.ConfirmPassword {
+		res.Message = "passwords don't match"
 		res.BadRequest(w)
 		return
 	}
 
-	// Save the user.
-	user, err := services.CreateUser(user)
+	// create the user account.
+	_, err = services.CreateUser(
+		models.User{
+			Username: p.Username,
+			Password: p.Password,
+			Email:    p.Email,
+			Fullname: p.Fullname,
+		})
 	if err != nil {
+		fmt.Println(err)
 		res.Message = err.Error()
-		res.Data = nil
 		res.BadRequest(w)
 		return
 	}
-	if err != nil {
-		res.Message = "Unable to generate session"
-		res.Data = nil
-		res.BadRequest(w)
-		return
-	}
-	res.Message = "User created"
-	res.Data = user
-	res.Created(w)
-}
 
-// Handle sign in.
-func signIn(w http.ResponseWriter, r *http.Request) {
-	utils.LogReq(r)
-	res := utils.Response{}
-	p := signInPayload{}
-	err := utils.BodyParser(r, &p)
-	if err != nil {
-		res.Data = nil
-		res.Message = "Unable to parse request body"
-		res.BadRequest(w)
-		return
-	}
-	user, err := services.FindUserByUsername(p.Username)
-	if err != nil {
-		res.Data = nil
-		res.Message = err.Error()
-		res.NotFound(w)
-		return
-	}
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(p.Password))
-	if err != nil {
-		res.Data = nil
-		res.Message = "Passwords don't match"
-		res.BadRequest(w)
-		return
-	}
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr) // Get the ip address
-	session, err := services.CreateSession(user, ip)
-	if err != nil {
-		res.Data = user
-		res.Message = "Unable to create session for the user"
-		res.Internal(w)
-		return
-	}
-	res.Message = "Login successful"
-	res.Data = map[string]string{"refreshToken": session.RefreshToken, "username": user.Username, "email": user.Email}
+	res.Data = true
+	res.Message = "user created"
 	res.Ok(w)
 }
 
-func getAccessToken(w http.ResponseWriter, r *http.Request) {
+// login controller, to verify user's password ans create new session for the user.
+func login(w http.ResponseWriter, r *http.Request) {
 	res := utils.Response{}
-	token := r.Header.Get("Authorization")
-	if token == "" {
-		res.Message = "No refresh token found"
+	p := loginBody{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&p)
+	if err != nil {
+		res.Message = "invalid request body"
 		res.BadRequest(w)
 		return
 	}
-	refreshToken := strings.Split(token, " ")[1]
-	accessToken, err := services.CreateAccessToken(refreshToken)
+	err = r.Body.Close()
+	if err != nil {
+		res.Message = "invalid request body"
+		res.BadRequest(w)
+		return
+	}
+	if p.Username == "" || p.Password == "" {
+		res.Message = "Invalid request body"
+		res.BadRequest(w)
+		return
+	}
+
+	u, err := services.FindUserByUsername(p.Username)
+	if err != nil {
+		res.Message = err.Error()
+		return
+	}
+
+	// compare the passwords
+	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(p.Password))
+	if err != nil {
+		res.Message = "Invalid credentials"
+		res.Forbidden(w)
+		return
+	}
+
+	// create a refresh token
+	hasher := sha256.New()
+	hasher.Write([]byte(uuid.NewString()))
+	token := hasher.Sum(nil)
+	// create a cookie handler and set the refresh token to the browser.
+	cookieHandler := securecookie.New([]byte(token), securecookie.GenerateRandomKey(32))
+	encoded, err := cookieHandler.Encode("PSID", token)
+	if err != nil {
+		res.Message = "Unable to set cookies"
+		res.BadRequest(w)
+		return
+	}
+	cookie := http.Cookie{
+		Name:     "PSID",
+		Value:    encoded,
+		Path:     "/",
+		Secure:   true,
+		HttpOnly: false,
+	}
+	http.SetCookie(w, &cookie)
+
+	// create jwt token for the client.
+	claims := models.AuthTokenClaims{
+		UserID:   u.ID,
+		Username: u.Username,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
+			Issuer:    "ports-app",
+		},
+	}
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	accessToken, err := jwtToken.SignedString([]byte(token))
 	if err != nil {
 		res.Message = err.Error()
 		res.BadRequest(w)
 		return
 	}
-	res.Message = "Access token generated"
-	res.Data = accessToken
+	res.Data = AuthResponse{AccessToken: accessToken}
+	res.Message = "user created"
 	res.Ok(w)
+}
+
+func logout(w http.ResponseWriter, r *http.Request) {
+
 }
