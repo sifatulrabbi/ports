@@ -146,5 +146,15 @@ func login(w http.ResponseWriter, r *http.Request) {
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
-
+	res := utils.Response{}
+	// remove the refresh token cookie
+	cookie := http.Cookie{
+		Name:   "PSID",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	}
+	http.SetCookie(w, &cookie)
+	res.Message = "successfully logged out"
+	res.Ok(w)
 }

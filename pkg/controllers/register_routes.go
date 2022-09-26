@@ -10,7 +10,7 @@ import (
 func RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/api/v1/auth/register", controllerWrapper(register)).Methods("POST")
 	r.HandleFunc("/api/v1/auth/login", controllerWrapper(login)).Methods("POST")
-	r.HandleFunc("/api/v1/auth/logout", controllerWrapper(logout)).Methods("POST")
+	r.HandleFunc("/api/v1/auth/logout", controllerWrapper(logout)).Methods("POST", "GET", "DELETE")
 }
 
 func controllerWrapper(next func(w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request) {
