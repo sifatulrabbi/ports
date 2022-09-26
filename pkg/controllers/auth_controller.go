@@ -1,15 +1,10 @@
 package controllers
 
 import (
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
-	jwt "github.com/golang-jwt/jwt/v4"
-	"github.com/google/uuid"
-	"github.com/gorilla/securecookie"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/sifatulrabbi/ports/pkg/models"
@@ -60,6 +55,14 @@ func register(w http.ResponseWriter, r *http.Request) {
 		res.Message = "passwords don't match"
 		res.BadRequest(w)
 		return
+	}
+	// verify the authenticity of the username
+	if prevUser, err := services.FindUserByUsername(p.Username); err == nil {
+		if prevUser.Username == p.Username {
+			res.Message = "username already in use"
+			res.BadRequest(w)
+			return
+		}
 	}
 
 	// create the user account.
@@ -125,44 +128,18 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// create a refresh token
-	hasher := sha256.New()
-	hasher.Write([]byte(uuid.NewString()))
-	token := hasher.Sum(nil)
-	// create a cookie handler and set the refresh token to the browser.
-	cookieHandler := securecookie.New([]byte(token), securecookie.GenerateRandomKey(32))
-	encoded, err := cookieHandler.Encode("PSID", token)
+	refreshToken, accessToken, err := services.CreateSession(r, &u)
 	if err != nil {
-		res.Message = "Unable to set cookies"
-		res.BadRequest(w)
-		return
-	}
-	cookie := http.Cookie{
-		Name:     "PSID",
-		Value:    encoded,
-		Path:     "/",
-		Secure:   true,
-		HttpOnly: false,
-	}
-	http.SetCookie(w, &cookie)
-
-	// create jwt token for the client.
-	claims := models.AuthTokenClaims{
-		UserID:   u.ID,
-		Username: u.Username,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
-			Issuer:    "ports-app",
-		},
-	}
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	accessToken, err := jwtToken.SignedString([]byte(token))
-	if err != nil {
-		fmt.Println(err)
 		res.Message = err.Error()
 		res.BadRequest(w)
 		return
 	}
+	cookie := http.Cookie{
+		Name:  "PSID",
+		Value: refreshToken,
+		Path:  "/",
+	}
+	http.SetCookie(w, &cookie)
 	res.Data = AuthResponse{AccessToken: accessToken}
 	res.Message = "user created"
 	res.Ok(w)
