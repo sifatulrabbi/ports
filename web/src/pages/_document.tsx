@@ -1,4 +1,4 @@
-import Document, {Html, Head, Main, NextScript} from "next/document"
+import Document, { Html, Head, Main, NextScript } from "next/document"
 
 class MyDocument extends Document {
 	render() {
@@ -6,7 +6,10 @@ class MyDocument extends Document {
 			<Html lang="en" data-theme="winter">
 				<Head>
 					<meta charSet="UTF-8" />
-					<meta name="description" content="Ports, build your own home room drive" />
+					<meta
+						name="description"
+						content="Ports, connect with your team mates"
+					/>
 					<meta name="robots" content="index, follow" />
 					<link rel="icon" href="/favicon.png" />
 				</Head>

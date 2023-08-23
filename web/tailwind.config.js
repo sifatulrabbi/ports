@@ -3,5 +3,6 @@ module.exports = {
 	plugins: [require("@tailwindcss/typography"), require("daisyui")],
 	daisyui: {
 		theme: ["winter"],
+		prefix: "dui--",
 	},
 }
