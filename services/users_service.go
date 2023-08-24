@@ -43,56 +43,50 @@ type UserPayload struct {
 	Name  string `json:"name"`
 }
 
-func (u *UsersService) CreateOne(p UserPayload) (*User, error) {
+func (s *UsersService) CreateOne(p UserPayload) (*User, error) {
 	user := &User{
 		ID:    uuid.New(),
 		Email: p.Email,
 		Name:  p.Name,
 		Title: p.Title,
 	}
-	if err := u.db.Create(user).Error; err != nil {
+	if err := s.db.Create(user).Error; err != nil {
 		return nil, err
 	}
 	return user, nil
 }
 
-func (u *UsersService) UpdateOne(f UserFilter, p UserPayload) (*User, error) {
+func (s *UsersService) UpdateOne(f UserFilter, p UserPayload) (*User, error) {
 	user := User{ID: f.ID}
-	res := u.db.Model(&user).Where("id = ?", f.ID).Updates(p)
+	res := s.db.Model(&user).Where("id = ?", f.ID).Updates(p)
 	if res.Error != nil {
-		u.Log("unable to update the user\nerror:%s\n", res.Error.Error())
+		s.Log("unable to update the user\nerror:%s\n", res.Error.Error())
 		return nil, res.Error
 	}
-	res.First(&user, user.ID)
-	if res.Error != nil {
-		u.Log("unable to get the updated user\nerror:%s\n", res.Error.Error())
+	if err := res.First(&user, user.ID); err != nil {
+		s.Log("unable to get the updated user\nerror:%s\n", res.Error.Error())
 		return nil, res.Error
 	}
 	return &user, nil
 }
 
-func (u *UsersService) DeleteOne(f UserFilter) error {
+func (s *UsersService) DeleteOne(f UserFilter) error {
 	user := User{ID: f.ID}
-	res := u.db.First(&user, f.ID)
-	if res.Error != nil {
-		u.Log("unable to find the user: %s\nerror:%s\n", f.ID, res.Error.Error())
-		return res.Error
-	}
-	res.Delete(&user)
-	return res.Error
+	err := s.db.Delete(&user, f.ID).Error
+	return err
 }
 
 func (u *UsersService) GetOne(p UserFilter) (*User, error) {
 	user := User{}
-	if res := u.db.First(&user, p.ID); res.Error != nil {
-		return nil, res.Error
+	if err := u.db.First(&user, p.ID).Error; err != nil {
+		return nil, err
 	}
 	return &user, nil
 }
 
-func (u *UsersService) GetMany(p UserFilter) (*[]User, error) {
+func (s *UsersService) GetMany(p UserFilter) (*[]User, error) {
 	users := []User{}
-	res := u.db.Find(&users)
+	res := s.db.Find(&users)
 	if res.Error != nil {
 		return nil, res.Error
 	}
