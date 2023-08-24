@@ -5,11 +5,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/sifatulrabbi/ports/services"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+const userId = "da525320-43e0-478a-a3c2-b5424a6f8fa5"
 
 func getTestDB(t *testing.T) *gorm.DB {
 	godotenv.Load("../.env")
@@ -51,21 +54,62 @@ func TestCreateUser(t *testing.T) {
 		t.Error(err.Error())
 		return
 	}
-	t.Log(u)
+	t.Log(u.String())
 }
 
 func TestGetUserById(t *testing.T) {
-	t.FailNow()
+	id, err := uuid.Parse(userId)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	s := getUsersService(t)
+	user, err := s.GetOne(services.UserFilter{ID: id})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(user.String())
 }
 
 func TestGetManyUsers(t *testing.T) {
-	t.FailNow()
+	s := getUsersService(t)
+	users, err := s.GetMany(services.UserFilter{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Logf("users found %v", len(*users))
 }
 
 func TestUpdateOneUser(t *testing.T) {
-	t.FailNow()
+	id, err := uuid.Parse(userId)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	s := getUsersService(t)
+	filter := services.UserFilter{ID: id}
+	payload := services.UserPayload{
+		Title: "Full Stack Developer",
+	}
+	user, err := s.UpdateOne(filter, payload)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(user.String())
 }
 
 func TestDeleteOneUser(t *testing.T) {
-	t.FailNow()
+	id, err := uuid.Parse(userId)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	s := getUsersService(t)
+	filter := services.UserFilter{ID: id}
+	if err = s.DeleteOne(filter); err != nil {
+		t.Error(err)
+	}
 }

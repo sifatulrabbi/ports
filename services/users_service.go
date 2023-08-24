@@ -1,7 +1,7 @@
 package services
 
 import (
-	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,6 +28,10 @@ type User struct {
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
+func (u *User) String() string {
+	return fmt.Sprintf("User<%s, %s, %s, %s, %s, %s>", u.ID, u.Email, u.Name, u.Title, u.CreatedAt, u.UpdatedAt)
+}
+
 type UserFilter struct {
 	ID    uuid.UUID `json:"id"`
 	Email string    `json:"email"`
@@ -52,20 +56,47 @@ func (u *UsersService) CreateOne(p UserPayload) (*User, error) {
 	return user, nil
 }
 
-func (u *UsersService) UpdateOne(p UserPayload) (*User, error) {
-	return nil, errors.New("not completed yet")
+func (u *UsersService) UpdateOne(f UserFilter, p UserPayload) (*User, error) {
+	user := User{ID: f.ID}
+	res := u.db.Model(&user).Where("id = ?", f.ID).Updates(p)
+	if res.Error != nil {
+		u.Log("unable to update the user\nerror:%s\n", res.Error.Error())
+		return nil, res.Error
+	}
+	res.First(&user, user.ID)
+	if res.Error != nil {
+		u.Log("unable to get the updated user\nerror:%s\n", res.Error.Error())
+		return nil, res.Error
+	}
+	return &user, nil
 }
 
-func (u *UsersService) DeleteOne(p UserFilter) (*User, error) {
-	return nil, errors.New("not completed yet")
+func (u *UsersService) DeleteOne(f UserFilter) error {
+	user := User{ID: f.ID}
+	res := u.db.First(&user, f.ID)
+	if res.Error != nil {
+		u.Log("unable to find the user: %s\nerror:%s\n", f.ID, res.Error.Error())
+		return res.Error
+	}
+	res.Delete(&user)
+	return res.Error
 }
 
 func (u *UsersService) GetOne(p UserFilter) (*User, error) {
-	return nil, errors.New("not completed yet")
+	user := User{}
+	if res := u.db.First(&user, p.ID); res.Error != nil {
+		return nil, res.Error
+	}
+	return &user, nil
 }
 
-func (u *UsersService) GetMany(p UserFilter) (*User, error) {
-	return nil, errors.New("not completed yet")
+func (u *UsersService) GetMany(p UserFilter) (*[]User, error) {
+	users := []User{}
+	res := u.db.Find(&users)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return &users, nil
 }
 
 func NewUsersService(db *gorm.DB) (*UsersService, error) {
