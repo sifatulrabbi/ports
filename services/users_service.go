@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -40,6 +41,7 @@ type UserPayload struct {
 
 func (u *UsersService) CreateOne(p UserPayload) (*User, error) {
 	user := &User{
+		ID:    uuid.New(),
 		Email: p.Email,
 		Name:  p.Name,
 		Title: p.Title,
@@ -48,6 +50,22 @@ func (u *UsersService) CreateOne(p UserPayload) (*User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+func (u *UsersService) UpdateOne(p UserPayload) (*User, error) {
+	return nil, errors.New("not completed yet")
+}
+
+func (u *UsersService) DeleteOne(p UserFilter) (*User, error) {
+	return nil, errors.New("not completed yet")
+}
+
+func (u *UsersService) GetOne(p UserFilter) (*User, error) {
+	return nil, errors.New("not completed yet")
+}
+
+func (u *UsersService) GetMany(p UserFilter) (*User, error) {
+	return nil, errors.New("not completed yet")
 }
 
 func NewUsersService(db *gorm.DB) (*UsersService, error) {
