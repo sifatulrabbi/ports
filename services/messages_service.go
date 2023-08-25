@@ -19,9 +19,10 @@ type MessagesService struct {
 }
 
 type Message struct {
+	gorm.Model
 	ID        uuid.UUID `gorm:"type:uuid;primary_key" json:"id"`
-	SenderID  uuid.UUID `gorm:"type:uuid" json:"sender_id"`
-	RoomID    uuid.UUID `gorm:"type:uuid" json:"room_id"`
+	SenderID  uuid.UUID `gorm:"type:uuid;not null;reference:ID" json:"sender_id"`
+	RoomID    uuid.UUID `gorm:"type:uuid;not null;reference:ID" json:"room_id"`
 	Richtext  string    `gorm:"text" json:"richtext"`
 	Audio     string    `gorm:"type:text" json:"audio"`
 	Video     string    `gorm:"type:text" json:"video"`
