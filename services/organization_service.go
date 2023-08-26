@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,9 +25,16 @@ type Organization struct {
 	Name        string    `gorm:"type:text;not null" json:"name"`
 	Email       string    `gorm:"type:text;not null" json:"email"`
 	Description string    `gorm:"type:text;not null" json:"description"`
-	MemberIDs   []string  `gorm:"type:text[];not null" json:"member_ids"`
+	MemberIDs   UUIDArray `gorm:"type:uuid[];not null" json:"member_ids"`
 	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`
+}
+
+func (org *Organization) String() string {
+	return fmt.Sprintf(
+		"Organization <%s, %s, %s, %s, %s, %s, %s>\n",
+		org.ID, org.Name, org.Email, org.Description, org.MemberIDs, org.CreatedAt, org.UpdatedAt,
+	)
 }
 
 type OrganizationFilter struct {
@@ -34,10 +42,10 @@ type OrganizationFilter struct {
 }
 
 type OrganizationPayload struct {
-	Name        string   `gorm:"type:text;not null" json:"name"`
-	Email       string   `gorm:"type:text;not null" json:"email"`
-	Description string   `gorm:"type:text;not null" json:"description"`
-	MemberIDs   []string `gorm:"type:text;not null" json:"member_ids"`
+	Name        string   `json:"name"`
+	Email       string   `json:"email"`
+	Description string   `json:"description"`
+	MemberIDs   []string `json:"member_ids"`
 }
 
 func (s *OrganizationsService) GetOne(f OrganizationFilter) (*Organization, error) {
@@ -57,12 +65,16 @@ func (s *OrganizationsService) GetMany(f OrganizationFilter) (*[]Organization, e
 }
 
 func (s *OrganizationsService) CreateOne(p OrganizationPayload) (*Organization, error) {
+	memberIds := UUIDArray{}
+	if err := memberIds.NewFromStrings(&p.MemberIDs); err != nil {
+		return nil, err
+	}
 	org := Organization{
 		ID:          uuid.New(),
 		Name:        p.Name,
 		Email:       p.Email,
 		Description: p.Description,
-		MemberIDs:   p.MemberIDs,
+		MemberIDs:   memberIds,
 	}
 	if org.Name == "" {
 		return nil, errors.New("'name' is required")
@@ -73,7 +85,7 @@ func (s *OrganizationsService) CreateOne(p OrganizationPayload) (*Organization, 
 	} else if org.MemberIDs == nil {
 		return nil, errors.New("'member_ids' is required")
 	}
-	if err := s.db.Create(org).Error; err != nil {
+	if err := s.db.Create(&org).Error; err != nil {
 		return nil, err
 	}
 	return &org, nil
@@ -81,7 +93,19 @@ func (s *OrganizationsService) CreateOne(p OrganizationPayload) (*Organization, 
 
 func (s *OrganizationsService) UpdateOne(f OrganizationFilter, p OrganizationPayload) (*Organization, error) {
 	org := Organization{ID: f.ID}
-	res := s.db.Model(&org).Where("id = ?", f.ID).Updates(p)
+	updateData := map[string]any{
+		"name":        p.Name,
+		"email":       p.Email,
+		"description": p.Description,
+	}
+	if len(p.MemberIDs) > 0 {
+		memberIds := UUIDArray{}
+		if err := memberIds.NewFromStrings(&p.MemberIDs); err != nil {
+			return nil, err
+		}
+		updateData["member_ids"] = memberIds
+	}
+	res := s.db.Model(&org).Where("id = ?", f.ID).Updates(updateData)
 	if res.Error != nil {
 		return nil, res.Error
 	}
