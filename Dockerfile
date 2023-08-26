@@ -6,8 +6,6 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
-COPY .env ./
-
 COPY . ./
 
 RUN GOOS=linux go build -o ./ports-app ./main.go
@@ -17,9 +15,9 @@ FROM alpine:latest
 
 WORKDIR /app
 
-COPY --from=builder /app/ports-app ./
+RUN echo -e "PORT=8000\nPGHOST=localhost\nPGDBNAME=postgres\nPGSSL=disable" > .env
 
-COPY .env ./
+COPY --from=builder /app/ports-app ./
 
 EXPOSE 8000
 
