@@ -36,7 +36,7 @@ func (v *UUIDArray) Scan(value interface{}) error {
 
 func (v UUIDArray) Value() (driver.Value, error) {
 	if len(v) == 0 {
-		return "ARRAY []", nil
+		return "{}", nil
 	}
 	strArr := []string{}
 	for _, id := range v {

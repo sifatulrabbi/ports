@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	mockOrgId = "599e1754-6e42-4555-bc27-8a9eeb972d4c"
+	mockOrgId  = "0f841993-41fa-4f55-b536-b4f057eaf454"
+	mockUserId = "da525320-43e0-478a-a3c2-b5424a6f8fa5"
 )
 
 func getOrganizationsService(t *testing.T) *services.OrganizationsService {
@@ -27,7 +28,7 @@ func TestCreateOrganization(t *testing.T) {
 		Name:        "Sifatul's Org",
 		Email:       "sifatul@sifatul.com",
 		Description: "Testing organization",
-		MemberIDs:   []string{"da525320-43e0-478a-a3c2-b5424a6f8fa5"},
+		MemberIDs:   []string{},
 	}
 	if org, err := s.CreateOne(p); err != nil {
 		t.Error(err)
@@ -91,4 +92,55 @@ func TestGetManyOrganization(t *testing.T) {
 	} else {
 		t.Logf("organizations found: %v", len(*orgs))
 	}
+}
+
+func TestAddMember(t *testing.T) {
+	s := getOrganizationsService(t)
+	id, err := uuid.Parse(mockOrgId)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	org, err := s.AddMember(services.OrganizationFilter{ID: id}, mockUserId)
+	if err != nil {
+		t.Error(err)
+	}
+	idFound := false
+	for _, mid := range org.MemberIDs {
+		if mid.String() == mockOrgId {
+			idFound = false
+		}
+	}
+	if !idFound {
+		t.Error("member id is not added")
+		return
+	}
+	t.Log(org.String())
+}
+
+func TestRemoveMember(t *testing.T) {
+
+}
+
+func TestAddAdmin(t *testing.T) {
+	s := getOrganizationsService(t)
+	id, err := uuid.Parse(mockOrgId)
+	if err != nil {
+		return
+	}
+	org, err := s.AddAdmin(services.OrganizationFilter{ID: id}, mockUserId)
+	if err != nil {
+		t.Error(err)
+	}
+	idFound := false
+	for _, aid := range org.AdminIDs {
+		if aid.String() == mockOrgId {
+			idFound = false
+		}
+	}
+	if !idFound {
+		t.Error("admin id is not added")
+		return
+	}
+	t.Log(org.String())
 }

@@ -10,6 +10,15 @@ import (
 
 var _ UsersCRUD = &UsersService{}
 
+func NewUsersService(db *gorm.DB) (*UsersService, error) {
+	if err := db.AutoMigrate(&User{}); err != nil {
+		return nil, err
+	}
+	service := newServiceWithDB[User, UserPayload, UserFilter](db, "UsersService")
+	usersService := &UsersService{ServiceWithDB: service}
+	return usersService, nil
+}
+
 type UsersCRUD interface {
 	crudService[User, UserPayload, UserFilter]
 }
@@ -91,13 +100,4 @@ func (s *UsersService) GetMany(p UserFilter) (*[]User, error) {
 		return nil, res.Error
 	}
 	return &users, nil
-}
-
-func NewUsersService(db *gorm.DB) (*UsersService, error) {
-	if err := db.AutoMigrate(&User{}); err != nil {
-		return nil, err
-	}
-	service := newServiceWithDB[User, UserPayload, UserFilter](db, "UsersService")
-	usersService := &UsersService{ServiceWithDB: service}
-	return usersService, nil
 }

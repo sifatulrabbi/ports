@@ -10,6 +10,15 @@ import (
 
 var _ MessagesCRUD = &MessagesService{}
 
+func NewMessagesService(db *gorm.DB) (*MessagesService, error) {
+	if err := db.AutoMigrate(&Message{}); err != nil {
+		return nil, err
+	}
+	service := newServiceWithDB[Message, MessagePayload, MessageFilter](db, "MessagesService")
+	messagesService := &MessagesService{ServiceWithDB: service}
+	return messagesService, nil
+}
+
 type MessagesCRUD interface {
 	crudService[Message, MessagePayload, MessageFilter]
 }
@@ -111,13 +120,4 @@ func (s *MessagesService) DeleteOne(f MessageFilter) error {
 	msg := Message{ID: f.ID}
 	res := s.db.Delete(&msg, f.ID)
 	return res.Error
-}
-
-func NewMessagesService(db *gorm.DB) (*MessagesService, error) {
-	if err := db.AutoMigrate(&Message{}); err != nil {
-		return nil, err
-	}
-	service := newServiceWithDB[Message, MessagePayload, MessageFilter](db, "MessagesService")
-	messagesService := &MessagesService{ServiceWithDB: service}
-	return messagesService, nil
 }
