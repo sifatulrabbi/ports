@@ -15,7 +15,14 @@ FROM alpine:latest
 
 WORKDIR /app
 
-RUN echo -e "PORT=8000\nPGHOST=localhost\nPGDBNAME=postgres\nPGSSL=disable" > .env
+ENV GO_ENV='production'
+ENV GIN_MODE='release'
+ENV PGUSER='admin'
+ENV PGPASSWORD='p@$$word'
+ENV PGHOST='locahost'
+ENV PGDBNAME='ports'
+ENV PGSSL='disable'
+ENV PORT='8000'
 
 COPY --from=builder /app/ports-app ./
 

@@ -14,6 +14,8 @@ import (
 	"github.com/sifatulrabbi/ports/services"
 )
 
+var GO_ENV = os.Getenv("GO_ENV") // by default is going to be empty ""
+
 func main() {
 	var (
 		err      error
@@ -25,7 +27,9 @@ func main() {
 		Router   *gin.Engine
 	)
 
-	godotenv.Load(".env")
+	if GO_ENV != "production" {
+		godotenv.Load(".env")
+	}
 	port = os.Getenv("PORT")
 	pgHost = os.Getenv("PGHOST")
 	pgDbName = os.Getenv("PGDBNAME")
