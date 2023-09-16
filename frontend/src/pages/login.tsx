@@ -1,22 +1,21 @@
 import React from "react";
-import { Button } from "@mui/material";
+import { Typography, Button } from "@mui/material";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const LoginPage: React.FC = () => {
-    const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-    };
+    const { loginWithRedirect } = useAuth0();
 
     return (
-        <div className="tw-w-full tw-flex tw-flex-col tw-p-4">
-            <form
-                action="submit"
-                className="w-full flex flex-col max-w-[600px]"
-                onSubmit={handleSubmit}
+        <div className="w-full flex flex-col p-8 justify-center items-center h-[100vh] gap-4">
+            <Typography variant="h4">Ports</Typography>
+            <Button
+                onClick={() => loginWithRedirect()}
+                variant="contained"
+                size="large"
+                className="w-max mx-auto"
             >
-                <Button type="submit" size="large" variant="contained">
-                    Login
-                </Button>
-            </form>
+                Login
+            </Button>
         </div>
     );
 };

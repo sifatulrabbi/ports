@@ -7,6 +7,7 @@ import {
     ThemeProvider,
 } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
+import { Auth0Provider } from "@auth0/auth0-react";
 import router from "./router.tsx";
 
 import "@fontsource/roboto/300.css";
@@ -40,7 +41,15 @@ root.render(
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>
                 <CssBaseline />
-                <RouterProvider router={router} />
+                <Auth0Provider
+                    domain="sifatul.us.auth0.com"
+                    clientId="qZJbS9PON3T090pNuN03FMxcfLMIx7o0"
+                    authorizationParams={{
+                        redirect_uri: window.location.origin,
+                    }}
+                >
+                    <RouterProvider router={router} />
+                </Auth0Provider>
             </ThemeProvider>
         </StyledEngineProvider>
     </React.StrictMode>,

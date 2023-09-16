@@ -2,7 +2,7 @@
 export default {
     content: ["./src/**/*.{html,js,jsx,tsx,ts}"],
     important: true,
-    prefix: "tw-",
+    // prefix: "tw-",
     theme: {
         extend: {},
     },

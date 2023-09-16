@@ -1,18 +1,30 @@
-import { createBrowserRouter } from "react-router-dom";
+import { Outlet, createBrowserRouter } from "react-router-dom";
 import { HomePage, LoginPage } from "./pages";
-import App from "./app";
+import AuthProvider from "./contexts/auth_context";
+import { AppBar } from "./modules/navbars";
 
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <App />,
+        element: (
+            <AuthProvider>
+                <AppBar />
+                <div className="w-full h-[54px] md:h-[64px]" />
+                <Outlet />
+            </AuthProvider>
+        ),
         children: [
             {
                 path: "",
                 element: <HomePage />,
             },
+        ],
+    },
+    {
+        path: "/auth",
+        children: [
             {
-                path: "/login",
+                path: "",
                 element: <LoginPage />,
             },
         ],
