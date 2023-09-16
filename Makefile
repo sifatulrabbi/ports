@@ -1,6 +1,6 @@
 .PHONY: server web build build-osx
 
-server:
+run:
 	go run ./main.go
 web:
 	cd ./web && yarn dev

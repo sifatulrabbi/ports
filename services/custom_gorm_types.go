@@ -48,7 +48,7 @@ func (v UUIDArray) Value() (driver.Value, error) {
 	return joinedStr, nil
 }
 
-func (v *UUIDArray) NewFromStrings(stringIds *[]string) error {
+func (v *UUIDArray) ParseStringArr(stringIds *[]string) error {
 	for _, strId := range *stringIds {
 		if strId == "" {
 			return errors.New("invalid id in the array")
@@ -60,4 +60,12 @@ func (v *UUIDArray) NewFromStrings(stringIds *[]string) error {
 		*v = append(*v, id)
 	}
 	return nil
+}
+
+func (v *UUIDArray) GetStringArr() []string {
+	strArr := []string{}
+	for _, id := range *v {
+		strArr = append(strArr, id.String())
+	}
+	return strArr
 }

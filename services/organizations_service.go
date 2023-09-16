@@ -81,7 +81,7 @@ func (s *OrganizationsService) GetMany(f OrganizationFilter) (*[]Organization, e
 
 func (s *OrganizationsService) CreateOne(p OrganizationPayload) (*Organization, error) {
 	memberIds := UUIDArray{}
-	if err := memberIds.NewFromStrings(&p.MemberIDs); err != nil {
+	if err := memberIds.ParseStringArr(&p.MemberIDs); err != nil {
 		return nil, err
 	}
 	org := Organization{
@@ -121,14 +121,14 @@ func (s *OrganizationsService) UpdateOne(f OrganizationFilter, p OrganizationPay
 	}
 	if len(p.MemberIDs) > 0 {
 		memberIds := UUIDArray{}
-		if err := memberIds.NewFromStrings(&p.MemberIDs); err != nil {
+		if err := memberIds.ParseStringArr(&p.MemberIDs); err != nil {
 			return nil, err
 		}
 		updateData["member_ids"] = memberIds
 	}
 	if len(p.AdminIDs) > 0 {
 		adminIds := UUIDArray{}
-		if err := adminIds.NewFromStrings(&p.AdminIDs); err != nil {
+		if err := adminIds.ParseStringArr(&p.AdminIDs); err != nil {
 			return nil, err
 		}
 		updateData["admin_ids"] = adminIds

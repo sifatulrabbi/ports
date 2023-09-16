@@ -33,6 +33,7 @@ type User struct {
 	Email     string    `gorm:"type:text" json:"email"`
 	Title     string    `gorm:"type:text" json:"title"`
 	Name      string    `gorm:"type:text" json:"name"`
+	Password  string    `gorm:"type:text" json:"password"`
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
@@ -47,17 +48,19 @@ type UserFilter struct {
 }
 
 type UserPayload struct {
-	Email string `json:"email"`
-	Title string `json:"title"`
-	Name  string `json:"name"`
+	Email    string `json:"email"`
+	Title    string `json:"title"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
 }
 
 func (s *UsersService) CreateOne(p UserPayload) (*User, error) {
 	user := &User{
-		ID:    uuid.New(),
-		Email: p.Email,
-		Name:  p.Name,
-		Title: p.Title,
+		ID:       uuid.New(),
+		Email:    p.Email,
+		Name:     p.Name,
+		Title:    p.Title,
+		Password: p.Password,
 	}
 	if err := s.db.Create(user).Error; err != nil {
 		return nil, err
