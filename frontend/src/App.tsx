@@ -1,7 +1,13 @@
 import React from "react";
+import { Outlet } from "react-router-dom";
+import AuthProvider from "./contexts/auth_context";
 
 const App: React.FC = () => {
-    return <div>App</div>;
+    return (
+        <AuthProvider>
+            <Outlet />
+        </AuthProvider>
+    );
 };
 
 export default App;
