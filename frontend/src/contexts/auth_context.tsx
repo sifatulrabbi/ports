@@ -2,8 +2,11 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import { CircularProgress, Typography } from "@mui/material";
+import { useHttp } from "@/hooks";
 
-const AuthContext = React.createContext(null);
+type AuthCtx = null;
+
+const AuthContext = React.createContext<AuthCtx>(null);
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuthContext = () => React.useContext(AuthContext);
@@ -12,8 +15,8 @@ const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
     children,
 }) => {
     const [loading, setLoading] = React.useState(false);
-    const { user, isAuthenticated, isLoading, getAccessTokenSilently } =
-        useAuth0();
+    const { user, isAuthenticated, isLoading, logout } = useAuth0();
+    const { https } = useHttp();
 
     const navigate = useNavigate();
 
@@ -26,12 +29,24 @@ const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
     const silentLogin = async () => {
         try {
             setLoading(true);
-            const token = await getAccessTokenSilently({ cacheMode: "on" });
-            console.log(token && "got a token");
+            const res = await (
+                await https()
+            ).get("/users/profile", {
+                params: {
+                    email: user?.email,
+                },
+            });
+            console.log(res.data);
             setLoading(false);
         } catch (err) {
             console.error(err);
-            navigate("/auth");
+            if (isAuthenticated) {
+                await logout({
+                    logoutParams: {
+                        returnTo: window.location.origin + "/auth",
+                    },
+                });
+            } else navigate("/auth");
         }
     };
 

@@ -6,9 +6,29 @@ import (
 	"github.com/sifatulrabbi/ports/services"
 )
 
+func getUserByEmail(c *gin.Context, s *services.UsersService) {
+	res := HttpResponse{}
+	email := c.Query("email")
+	if email == "" {
+		res.Message = "No email found in the request"
+		res.BadRequest(c)
+		return
+	}
+
+	user, err := s.GetByEmail(services.UserFilter{Email: email})
+	if err != nil {
+		res.Message = err.Error()
+		res.BadRequest(c)
+		return
+	}
+	res.Data = user.JSON()
+	res.Message = "User profile found"
+	res.Ok(c)
+}
+
 func getUserById(c *gin.Context, s *services.UsersService) {
-	res := httpResponse{}
-	user, err := s.GetOne(services.UserFilter{Email: "sifatuli.r@gmail.com"})
+	res := HttpResponse{}
+	user, err := s.GetOne(services.UserFilter{})
 	if err != nil {
 		res.Message = err.Error()
 		res.BadRequest(c)
@@ -21,7 +41,7 @@ func getUserById(c *gin.Context, s *services.UsersService) {
 }
 
 func createOneUser(c *gin.Context, s *services.UsersService) {
-	res := httpResponse{}
+	res := HttpResponse{}
 	payload := services.UserPayload{}
 	if err := c.BindJSON(&payload); err != nil {
 		res.Message = err.Error()
@@ -41,7 +61,7 @@ func createOneUser(c *gin.Context, s *services.UsersService) {
 }
 
 func updateOneUser(c *gin.Context, s *services.UsersService) {
-	res := httpResponse{}
+	res := HttpResponse{}
 	payload := services.UserPayload{}
 	if err := c.BindJSON(&payload); err != nil {
 		res.Message = err.Error()
@@ -66,6 +86,7 @@ func RegisterUsersHandlers(r *gin.Engine, s *services.UsersService) {
 	grp := r.Group("/users")
 	grp.POST("/", routeWrapper[*services.UsersService](s, createOneUser))
 	grp.GET("/", routeWrapper[*services.UsersService](s, getManyUsers))
+	grp.GET("/profile", routeWrapper[*services.UsersService](s, getUserByEmail))
 	grp.GET("/:id", routeWrapper[*services.UsersService](s, getUserById))
 	grp.PUT("/:id", routeWrapper[*services.UsersService](s, updateOneUser))
 	grp.DELETE("/:id", routeWrapper[*services.UsersService](s, deleteOneUser))

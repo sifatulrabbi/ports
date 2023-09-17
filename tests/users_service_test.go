@@ -90,3 +90,12 @@ func TestDeleteOneUser(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestGetUserByEmail(t *testing.T) {
+	s := getUsersService(t)
+	if user, err := s.GetByEmail(services.UserFilter{Email: "sifatuli.r@gmail.com"}); err != nil {
+		t.Error(err)
+	} else {
+		t.Log(user.String())
+	}
+}

@@ -2,6 +2,7 @@ import { Outlet, createBrowserRouter } from "react-router-dom";
 import { HomePage, LoginPage } from "@/pages";
 import AuthProvider from "@/contexts/auth_context";
 import { AppBar } from "@/modules/navbars";
+import OnboardingPage from "./pages/onboarding";
 
 const router = createBrowserRouter([
     {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
                 element: <LoginPage />,
             },
         ],
+    },
+    {
+        path: "/onboarding",
+        element: <OnboardingPage />,
     },
 ]);
 

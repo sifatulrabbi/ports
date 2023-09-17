@@ -8,7 +8,7 @@ const useHttps = () => {
         const token = await getAccessTokenSilently({ cacheMode: "on" });
         if (!token) throw new Error("User not logged in!");
         const client = axios.create({
-            baseURL: "https://localhost:8000",
+            baseURL: "http://localhost:8000",
             headers: {
                 "Authorization": token,
                 "Content-Type": "application/json",
@@ -20,7 +20,7 @@ const useHttps = () => {
 
     const http = () => {
         const client = axios.create({
-            baseURL: "https://localhost:8000",
+            baseURL: "http://localhost:8000",
             headers: {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
