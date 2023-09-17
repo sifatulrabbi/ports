@@ -41,7 +41,17 @@ func createOneUser(c *gin.Context, s *services.UsersService) {
 }
 
 func updateOneUser(c *gin.Context, s *services.UsersService) {
+	res := httpResponse{}
+	payload := services.UserPayload{}
+	if err := c.BindJSON(&payload); err != nil {
+		res.Message = err.Error()
+		res.BadRequest(c)
+		return
+	}
 
+	res.Message = "API not implemented yet."
+	res.Data = payload
+	res.Ok(c)
 }
 
 func deleteOneUser(c *gin.Context, s *services.UsersService) {

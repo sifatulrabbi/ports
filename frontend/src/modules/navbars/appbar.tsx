@@ -16,12 +16,19 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import { useAuth0 } from "@auth0/auth0-react";
 
-const navItems = ["Home", "About", "Contact"];
+const navItems: any[] = [];
 
 const AppBar: React.FC = () => {
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
     const { logout } = useAuth0();
+
+    const handleLogout = () =>
+        logout({
+            logoutParams: {
+                returnTo: window.location.origin + "/auth",
+            },
+        });
 
     const handleDrawerToggle = () => {
         setMobileOpen((prevState) => !prevState);
@@ -35,12 +42,17 @@ const AppBar: React.FC = () => {
             <Divider />
             <List>
                 {navItems.map((item) => (
-                    <ListItem key={item} disablePadding>
+                    <ListItem key={item.name + item.path} disablePadding>
                         <ListItemButton sx={{ textAlign: "center" }}>
-                            <ListItemText primary={item} />
+                            <ListItemText primary={item.name} />
                         </ListItemButton>
                     </ListItem>
                 ))}
+                <ListItem disablePadding>
+                    <ListItemButton sx={{ textAlign: "center" }}>
+                        <ListItemText primary="Logout" onClick={handleLogout} />
+                    </ListItemButton>
+                </ListItem>
             </List>
         </Box>
     );
@@ -60,21 +72,14 @@ const AppBar: React.FC = () => {
                     </Typography>
                     <Box sx={{ display: { xs: "none", sm: "block" } }}>
                         {navItems.map((item) => (
-                            <Button key={item} sx={{ color: "#fff" }}>
-                                {item}
+                            <Button
+                                key={"nav-links-" + item.name + item.path}
+                                sx={{ color: "#fff" }}
+                            >
+                                {item.name}
                             </Button>
                         ))}
-                        <Button
-                            sx={{ color: "#fff" }}
-                            onClick={() =>
-                                logout({
-                                    logoutParams: {
-                                        returnTo:
-                                            window.location.origin + "/login",
-                                    },
-                                })
-                            }
-                        >
+                        <Button sx={{ color: "#fff" }} onClick={handleLogout}>
                             Logout
                         </Button>
                     </Box>

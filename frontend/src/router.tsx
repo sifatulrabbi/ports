@@ -1,7 +1,7 @@
 import { Outlet, createBrowserRouter } from "react-router-dom";
-import { HomePage, LoginPage } from "./pages";
-import AuthProvider from "./contexts/auth_context";
-import { AppBar } from "./modules/navbars";
+import { HomePage, LoginPage } from "@/pages";
+import AuthProvider from "@/contexts/auth_context";
+import { AppBar } from "@/modules/navbars";
 
 const router = createBrowserRouter([
     {

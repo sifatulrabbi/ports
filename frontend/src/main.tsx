@@ -8,7 +8,7 @@ import {
 } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import { Auth0Provider } from "@auth0/auth0-react";
-import router from "./router.tsx";
+import router from "@/router.tsx";
 
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
