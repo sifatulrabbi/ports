@@ -17,7 +17,6 @@ const HomePage: React.FC = () => {
     const [savingProfile, setSavingProfile] = React.useState(false);
     const [name, setName] = React.useState("");
     const [title, setTitle] = React.useState("");
-    const [bio, setBio] = React.useState("");
 
     const { user } = useAuth0();
     const { https } = useHttp();
@@ -29,7 +28,6 @@ const HomePage: React.FC = () => {
             const payload = {
                 name,
                 title,
-                bio,
             };
             const res = await (await https()).put("/users", payload);
             console.log(res);
@@ -44,7 +42,6 @@ const HomePage: React.FC = () => {
     const handleResetForm = async () => {
         setName("");
         setTitle("");
-        setBio("");
     };
 
     const InfoSection = (p: { label: string; value: string }) => (
@@ -88,16 +85,6 @@ const HomePage: React.FC = () => {
                 type="text"
                 label="Title"
                 variant="filled"
-            />
-            <TextField
-                value={bio}
-                onChange={(e) => setBio(e.currentTarget.value)}
-                name="user-bio"
-                id="user-bio"
-                multiline
-                variant="filled"
-                rows={8}
-                label="Bio"
             />
         </form>
     );

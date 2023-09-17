@@ -3,12 +3,14 @@ import { Typography, TextField, Button } from "@mui/material";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import { useHttp } from "@/hooks";
 import { useNavigate } from "react-router-dom";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const OnboardingPage: React.FC = () => {
     const [name, setName] = React.useState("");
     const [title, setTitle] = React.useState("");
 
     const { http } = useHttp();
+    const { user } = useAuth0();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
@@ -28,6 +30,8 @@ const OnboardingPage: React.FC = () => {
 
     const handleReset = () => {};
 
+    if (!user) return <></>;
+
     return (
         <div className="w-full flex flex-col justify-center items-center min-h-[100vh]">
             <Typography variant="subtitle1">Welcome to</Typography>
@@ -38,6 +42,16 @@ const OnboardingPage: React.FC = () => {
                 onReset={handleReset}
                 className="w-full max-w-[500px] p-6 bg-white flex flex-col gap-4"
             >
+                <TextField
+                    label="Email"
+                    id="user-email"
+                    name="user-email"
+                    value={user.email}
+                    InputProps={{ readOnly: true }}
+                    variant="filled"
+                    placeholder="i.e. Sifatul Rabbi"
+                    helperText="You can't change your email"
+                />
                 <TextField
                     label="Name"
                     id="user-name"

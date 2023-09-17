@@ -32,7 +32,11 @@ const router = createBrowserRouter([
     },
     {
         path: "/onboarding",
-        element: <OnboardingPage />,
+        element: (
+            <AuthProvider>
+                <OnboardingPage />
+            </AuthProvider>
+        ),
     },
 ]);
 
