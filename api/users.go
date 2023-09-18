@@ -18,7 +18,11 @@ func getUserByEmail(c *gin.Context, s *services.UsersService) {
 	user, err := s.GetByEmail(services.UserFilter{Email: email})
 	if err != nil {
 		res.Message = err.Error()
-		res.BadRequest(c)
+		if res.Message == "user not found" {
+			res.NotFound(c)
+		} else {
+			res.BadRequest(c)
+		}
 		return
 	}
 	res.Data = user.JSON()

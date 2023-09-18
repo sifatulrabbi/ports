@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -98,9 +99,12 @@ func (s *UsersService) DeleteOne(f UserFilter) error {
 }
 
 func (s *UsersService) GetByEmail(f UserFilter) (*User, error) {
-	user := User{Email: f.Email}
-	if err := s.db.First(&user).Error; err != nil {
+	user := User{}
+	if err := s.db.Find(&user, map[string]string{"email": f.Email}).Error; err != nil {
 		return nil, err
+	}
+	if user.Email != f.Email {
+		return nil, errors.New("user not found")
 	}
 	return &user, nil
 }

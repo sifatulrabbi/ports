@@ -37,16 +37,22 @@ const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
                 },
             });
             console.log(res.data);
-            setLoading(false);
-        } catch (err) {
-            console.error(err);
-            if (isAuthenticated) {
+        } catch (err: any) {
+            if (
+                err.response &&
+                err.response.data &&
+                err.response.data.status_code === 404
+            ) {
+                navigate("/onboarding");
+            } else if (isAuthenticated) {
                 await logout({
                     logoutParams: {
                         returnTo: window.location.origin + "/auth",
                     },
                 });
             } else navigate("/auth");
+        } finally {
+            setLoading(false);
         }
     };
 

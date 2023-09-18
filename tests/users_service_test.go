@@ -99,3 +99,16 @@ func TestGetUserByEmail(t *testing.T) {
 		t.Log(user.String())
 	}
 }
+
+// when the requested user don't have an account on the database, the backend should reply with a message that clearly states that the user is not found in the db. Later the frontend will send the user to the onboarding page for creating a new user profile for the user.
+func TestWhenUserIsNotFound(t *testing.T) {
+	s := getUsersService(t)
+	if user, err := s.GetByEmail(services.UserFilter{Email: "no-user@example.com"}); err == nil {
+		t.Error("backend is not responding with an error even though the user is not found", user)
+	} else {
+		msg := err.Error()
+		if msg != "user not found" {
+			t.Error("vague error message", msg)
+		}
+	}
+}
